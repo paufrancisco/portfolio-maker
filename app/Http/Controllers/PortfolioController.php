@@ -6,6 +6,7 @@ use App\Models\Portfolio;
 use App\Models\Template;
 use App\Services\ResumeParser;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -96,9 +97,30 @@ class PortfolioController extends Controller
         return back()->with('status', 'Saved.');
     }
 
+    public function uploadImage(Request $request, Portfolio $portfolio): JsonResponse
+    {
+        abort_unless($portfolio->user_id === $request->user()->id, 403);
+
+        $request->validate([
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:max_width=4000,max_height=4000'],
+        ]);
+
+        $path = Storage::disk('images')->putFile(
+            'portfolios/'.$portfolio->id,
+            $request->file('image'),
+            'public'
+        );
+
+        if (! $path) {
+            return response()->json(['message' => 'Upload failed. Please try again.'], 500);
+        }
+
+        return response()->json(['url' => Storage::disk('images')->url($path)]);
+    }
+
     private const SECTION_FIELDS = [
         'experience' => ['company', 'position', 'type', 'start', 'end', 'description'],
-        'projects' => ['title', 'role', 'description', 'technologies', 'repo_url', 'demo_url'],
+        'projects' => ['title', 'role', 'description', 'technologies', 'repo_url', 'demo_url', 'image_url'],
         'certifications' => ['title', 'issuer', 'date', 'description'],
         'education' => ['school', 'degree', 'year', 'achievements'],
     ];
@@ -116,6 +138,7 @@ class PortfolioController extends Controller
             'profile.linkedin' => ['nullable', 'url:http,https', 'max:255'],
             'profile.github' => ['nullable', 'url:http,https', 'max:255'],
             'profile.website' => ['nullable', 'url:http,https', 'max:255'],
+            'profile.photo_url' => ['nullable', 'url:https', 'max:500'],
         ];
 
         foreach (self::SECTION_FIELDS as $section => $fields) {

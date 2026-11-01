@@ -5,6 +5,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({
     portfolio: Object,
@@ -30,7 +31,7 @@ const sections = [
     {
         key: 'projects',
         label: 'Projects',
-        blank: { title: '', role: '', description: '', technologies: '', repo_url: '', demo_url: '' },
+        blank: { title: '', role: '', description: '', technologies: '', repo_url: '', demo_url: '', image_url: '' },
         fields: [
             { key: 'title', label: 'Project title' },
             { key: 'role', label: 'Your role' },
@@ -75,6 +76,7 @@ const profile = {
     linkedin: d.linkedin ?? '',
     github: d.github ?? '',
     website: d.website ?? '',
+    photo_url: d.photo_url ?? '',
 };
 sections.forEach((s) => {
     profile[s.key] = Array.isArray(d[s.key]) ? d[s.key].map((row) => ({ ...s.blank, ...row })) : [];
@@ -92,6 +94,35 @@ const move = (s, i, dir) => {
     const j = i + dir;
     if (j < 0 || j >= arr.length) return;
     [arr[i], arr[j]] = [arr[j], arr[i]];
+};
+
+const uploading = ref(false);
+const uploadError = ref('');
+
+const upload = async (event, setUrl) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    uploading.value = true;
+    uploadError.value = '';
+    try {
+        const body = new FormData();
+        body.append('image', file);
+        const token = decodeURIComponent(document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='))?.split('=')[1] ?? '');
+        const res = await fetch(route('portfolios.images', props.portfolio.id), {
+            method: 'POST',
+            body,
+            headers: { 'X-XSRF-TOKEN': token, Accept: 'application/json' },
+            credentials: 'same-origin',
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.errors?.image?.[0] ?? json.message ?? 'Upload failed');
+        setUrl(json.url);
+    } catch (e) {
+        uploadError.value = e.message;
+    } finally {
+        uploading.value = false;
+        event.target.value = '';
+    }
 };
 
 const submit = () => {
@@ -138,6 +169,17 @@ const area =
                     <!-- Basics -->
                     <div class="space-y-4">
                         <h3 class="font-semibold text-gray-800">Basic information</h3>
+                        <div>
+                            <InputLabel value="Profile photo (jpg, png, webp, max 2MB)" />
+                            <div class="mt-2 flex items-center gap-4">
+                                <img v-if="form.profile.photo_url" :src="form.profile.photo_url" class="h-20 w-20 rounded-full object-cover" alt="" />
+                                <input type="file" accept=".jpg,.jpeg,.png,.webp" class="text-sm text-gray-700" @change="upload($event, (u) => (form.profile.photo_url = u))" />
+                                <button v-if="form.profile.photo_url" type="button" class="text-sm text-red-600" @click="form.profile.photo_url = ''">Remove</button>
+                            </div>
+                            <p v-if="uploading" class="mt-1 text-sm text-gray-500">Uploading...</p>
+                            <p v-if="uploadError" class="mt-1 text-sm text-red-600">{{ uploadError }}</p>
+                            <InputError :message="form.errors['profile.photo_url']" class="mt-1" />
+                        </div>
                         <div>
                             <InputLabel for="name" value="Full name" />
                             <TextInput id="name" v-model="form.profile.name" class="mt-1 block w-full" />
@@ -208,6 +250,14 @@ const area =
                         </p>
 
                         <div v-for="(row, i) in form.profile[s.key]" :key="i" class="space-y-3 rounded-lg border border-gray-200 p-4">
+                            <div v-if="s.key === 'projects'">
+                                <InputLabel value="Project image (jpg, png, webp, max 2MB)" />
+                                <div class="mt-2 flex items-center gap-4">
+                                    <img v-if="row.image_url" :src="row.image_url" class="h-16 w-24 rounded object-cover" alt="" />
+                                    <input type="file" accept=".jpg,.jpeg,.png,.webp" class="text-sm text-gray-700" @change="upload($event, (u) => (row.image_url = u))" />
+                                    <button v-if="row.image_url" type="button" class="text-sm text-red-600" @click="row.image_url = ''">Remove</button>
+                                </div>
+                            </div>
                             <div v-for="f in s.fields" :key="f.key">
                                 <InputLabel :value="f.label" />
                                 <textarea v-if="f.area" v-model="row[f.key]" rows="3" :class="area"></textarea>
