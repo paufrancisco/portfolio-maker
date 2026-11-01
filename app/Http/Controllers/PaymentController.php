@@ -17,11 +17,11 @@ class PaymentController extends Controller
         abort_unless($portfolio->user_id === $request->user()->id, 403);
 
         return Inertia::render('Payments/Create', [
-            'portfolio' => $portfolio->only(['id', 'status']),
+            'portfolio' => $portfolio->only(['id', 'status', 'slug']),
             'amount' => config('portfolio.price'),
             'qrUrl' => config('portfolio.qr_path'),
             'walletLabel' => config('portfolio.wallet_label'),
-            'payment' => $portfolio->payments()->latest('id')->first(['id', 'reference_no', 'status', 'amount']),
+            'payment' => $portfolio->payments()->latest('id')->first(['id', 'reference_no', 'status', 'amount', 'admin_note']),
         ]);
     }
 

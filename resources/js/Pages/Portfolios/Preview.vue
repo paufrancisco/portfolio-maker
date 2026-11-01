@@ -2,7 +2,8 @@
 import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Professional from '@/Templates/Professional.vue';
-import Colorful from '@/Templates/Colorful.vue';
+import PinkElegance from '@/Templates/PinkElegance.vue';
+import BlueDeveloper from '@/Templates/BlueDeveloper.vue';
 
 const props = defineProps({
     portfolio: Object,
@@ -12,8 +13,8 @@ const props = defineProps({
 
 const components = {
     professional: Professional,
-    pink: Colorful,
-    blue: Colorful,
+    pink: PinkElegance,
+    blue: BlueDeveloper,
 };
 
 const current = computed(() => components[props.portfolio.template_key] ?? Professional);

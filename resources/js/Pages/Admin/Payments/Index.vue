@@ -11,6 +11,12 @@ const approve = (payment) => {
         router.post(route('admin.payments.approve', payment.id));
     }
 };
+const reject = (payment) => {
+    const note = prompt('Reason for rejecting ' + payment.client_name + "'s payment (sent to the customer):");
+    if (note && note.trim()) {
+        router.post(route('admin.payments.reject', payment.id), { admin_note: note.trim() });
+    }
+};
 </script>
 
 <template>
@@ -59,6 +65,15 @@ const approve = (payment) => {
                         @click="approve(p)"
                     >
                         Approve &amp; Send
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rounded-md px-4 py-2 text-sm font-medium"
+                        style="background-color: #dc2626; color: #ffffff;"
+                        @click="reject(p)"
+                    >
+                        Reject
                     </button>
                 </div>
             </div>

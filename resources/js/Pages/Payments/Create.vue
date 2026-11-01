@@ -37,21 +37,43 @@ const submit = () => {
 
         <div class="py-12">
             <div class="mx-auto max-w-2xl space-y-6 sm:px-6 lg:px-8">
-                <div class="rounded-lg bg-white p-6 text-center shadow-sm">
+                <div v-if="portfolio.status === 'published'" class="rounded-lg bg-green-50 p-6 text-center text-green-800">
+                    <p class="font-semibold">Your portfolio is live!</p>
+                    <a
+                        v-if="portfolio.slug"
+                        :href="route('portfolios.public', portfolio.slug)"
+                        target="_blank"
+                        rel="noopener"
+                        class="mt-2 inline-block underline"
+                    >
+                        {{ route('portfolios.public', portfolio.slug) }}
+                    </a>
+                </div>
+
+                <div
+                    v-if="portfolio.status !== 'published' && payment && payment.status === 'rejected'"
+                    class="rounded-lg bg-red-50 p-4 text-sm text-red-800"
+                >
+                    <p class="font-semibold">Your last payment was rejected (ref: {{ payment.reference_no }}).</p>
+                    <p v-if="payment.admin_note" class="mt-1">Reason: {{ payment.admin_note }}</p>
+                    <p class="mt-1">Please upload a new proof of payment below.</p>
+                </div>
+
+                <div v-if="portfolio.status !== 'published'" class="rounded-lg bg-white p-6 text-center shadow-sm">
                     <p class="text-sm text-gray-600">Scan to pay via {{ walletLabel }}</p>
                     <img :src="qrUrl" alt="Payment QR" class="mx-auto my-4 max-h-80" />
                     <p class="text-2xl font-bold text-gray-800">PHP {{ amount.toFixed(2) }}</p>
                 </div>
 
                 <div
-                    v-if="payment && payment.status === 'pending'"
+                    v-if="portfolio.status !== 'published' && payment && payment.status === 'pending'"
                     class="rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800"
                 >
                     Payment received (ref: {{ payment.reference_no }}). Waiting for review.
                 </div>
 
                 <form
-                    v-else
+                    v-else-if="portfolio.status !== 'published'"
                     @submit.prevent="submit"
                     class="space-y-4 rounded-lg bg-white p-6 shadow-sm"
                 >

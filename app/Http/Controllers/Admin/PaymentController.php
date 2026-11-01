@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -44,7 +45,7 @@ class PaymentController extends Controller
         $portfolio = $payment->portfolio()->with('user')->firstOrFail();
 
         DB::transaction(function () use ($payment, $portfolio) {
-            $payment->update(['status' => 'paid']);
+            $payment->update(['status' => 'paid', 'reviewed_at' => now()]);
             $portfolio->update([
                 'slug' => $portfolio->slug ?? $this->makeSlug($portfolio),
                 'status' => 'published',
@@ -57,6 +58,35 @@ class PaymentController extends Controller
             Mail::raw(
                 "Your payment was received and your portfolio is now live:\n\n{$url}\n\nThank you!",
                 fn ($message) => $message->to($portfolio->user->email)->subject('Your portfolio is live')
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return redirect()->route('admin.payments.index');
+    }
+
+    public function reject(Request $request, Payment $payment): RedirectResponse
+    {
+        abort_unless($payment->status === 'pending', 422);
+
+        $validated = $request->validate([
+            'admin_note' => ['required', 'string', 'max:500'],
+        ]);
+
+        $payment->update([
+            'status' => 'rejected',
+            'admin_note' => $validated['admin_note'],
+            'reviewed_at' => now(),
+        ]);
+
+        $user = $payment->portfolio()->with('user')->firstOrFail()->user;
+        $url = route('payments.create', $payment->portfolio_id);
+
+        try {
+            Mail::raw(
+                "Your payment could not be verified.\n\nReason: {$validated['admin_note']}\n\nPlease upload a new proof of payment here:\n{$url}",
+                fn ($message) => $message->to($user->email)->subject('Payment needs your attention')
             );
         } catch (\Throwable $e) {
             report($e);

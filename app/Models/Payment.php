@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    protected $fillable = ['portfolio_id', 'reference_no', 'proof_path', 'amount', 'status'];
+    protected $fillable = ['portfolio_id', 'reference_no', 'proof_path', 'amount', 'status', 'admin_note', 'reviewed_at'];
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'reviewed_at' => 'datetime',
     ];
 
     public function portfolio(): \Illuminate\Database\Eloquent\Relations\BelongsTo
