@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Payment QR (kept out of the public repo)
+/public/images/payment-qr.*
