@@ -1,10 +1,16 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 
 defineProps({
     payments: Array,
 });
+
+const approve = (payment) => {
+    if (confirm('Approve payment from ' + payment.client_name + ' and send the portfolio URL?')) {
+        router.post(route('admin.payments.approve', payment.id));
+    }
+};
 </script>
 
 <template>
@@ -46,6 +52,14 @@ defineProps({
                         View proof
                     </a>
                     <span v-else class="text-sm text-red-600">Proof unavailable</span>
+
+                    <button
+                        type="button"
+                        class="rounded-md px-4 py-2 text-sm font-medium" style="background-color: #16a34a; color: #ffffff;"
+                        @click="approve(p)"
+                    >
+                        Approve &amp; Send
+                    </button>
                 </div>
             </div>
         </div>

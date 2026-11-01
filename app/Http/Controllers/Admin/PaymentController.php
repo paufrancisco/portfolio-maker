@@ -5,6 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Models\Portfolio;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,6 +35,47 @@ class PaymentController extends Controller
         return Inertia::render('Admin/Payments/Index', [
             'payments' => $payments,
         ]);
+    }
+
+    public function approve(Payment $payment): RedirectResponse
+    {
+        abort_unless($payment->status === 'pending', 422);
+
+        $portfolio = $payment->portfolio()->with('user')->firstOrFail();
+
+        DB::transaction(function () use ($payment, $portfolio) {
+            $payment->update(['status' => 'paid']);
+            $portfolio->update([
+                'slug' => $portfolio->slug ?? $this->makeSlug($portfolio),
+                'status' => 'published',
+            ]);
+        });
+
+        $url = route('portfolios.public', $portfolio->fresh()->slug);
+
+        try {
+            Mail::raw(
+                "Your payment was received and your portfolio is now live:\n\n{$url}\n\nThank you!",
+                fn ($message) => $message->to($portfolio->user->email)->subject('Your portfolio is live')
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return redirect()->route('admin.payments.index');
+    }
+
+    private function makeSlug(Portfolio $portfolio): string
+    {
+        $base = Str::slug($portfolio->data['name'] ?? $portfolio->user->name) ?: 'portfolio';
+        $slug = $base;
+        $i = 2;
+
+        while (Portfolio::where('slug', $slug)->where('id', '!=', $portfolio->id)->exists()) {
+            $slug = $base.'-'.$i++;
+        }
+
+        return $slug;
     }
 
     private function proofUrl(?string $path): ?string
