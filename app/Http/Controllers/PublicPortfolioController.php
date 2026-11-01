@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Portfolio;
 use App\Models\Template;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,9 +18,42 @@ class PublicPortfolioController extends Controller
             ?? Template::where('key', 'professional')->first();
 
         return Inertia::render('Portfolios/Preview', [
-            'portfolio' => $portfolio->only(['template_key', 'data']),
+            'portfolio' => [
+                'template_key' => $portfolio->template_key,
+                'data' => $this->publicData($portfolio),
+            ],
             'theme' => $template?->theme_options ?? [],
             'watermark' => false,
         ]);
+    }
+
+    public function resume(string $slug): RedirectResponse
+    {
+        $portfolio = Portfolio::where('slug', $slug)->where('status', 'published')->firstOrFail();
+
+        abort_unless(($portfolio->data['show_resume'] ?? false) && $portfolio->resume_path, 404);
+
+        try {
+            $url = Storage::disk('s3')->temporaryUrl($portfolio->resume_path, now()->addMinutes(5));
+        } catch (\Throwable $e) {
+            report($e);
+            abort(404);
+        }
+
+        return redirect()->away($url);
+    }
+
+    private function publicData(Portfolio $portfolio): array
+    {
+        $data = $portfolio->data ?? [];
+        $show = ($data['show_resume'] ?? false) && $portfolio->resume_path;
+
+        unset($data['show_resume'], $data['imported_from_resume'], $data['resume_url']);
+
+        if ($show) {
+            $data['resume_url'] = route('portfolios.resume', $portfolio->slug);
+        }
+
+        return $data;
     }
 }

@@ -77,6 +77,7 @@ const profile = {
     github: d.github ?? '',
     website: d.website ?? '',
     photo_url: d.photo_url ?? '',
+    show_resume: d.show_resume ?? false,
 };
 sections.forEach((s) => {
     profile[s.key] = Array.isArray(d[s.key]) ? d[s.key].map((row) => ({ ...s.blank, ...row })) : [];
@@ -180,6 +181,13 @@ const area =
                             <p v-if="uploadError" class="mt-1 text-sm text-red-600">{{ uploadError }}</p>
                             <InputError :message="form.errors['profile.photo_url']" class="mt-1" />
                         </div>
+                        <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3 text-sm text-gray-700">
+                            <input type="checkbox" v-model="form.profile.show_resume" class="mt-0.5 rounded border-gray-300 text-indigo-600" />
+                            <span>
+                                Ipakita ang <strong>Download Resume</strong> button sa portfolio ko.
+                                <span class="block text-xs text-gray-500">Ang naka-upload mong resume ang ida-download ng bisita. Makikita ang email at phone number na nasa resume mo.</span>
+                            </span>
+                        </label>
                         <div>
                             <InputLabel for="name" value="Full name" />
                             <TextInput id="name" v-model="form.profile.name" class="mt-1 block w-full" />

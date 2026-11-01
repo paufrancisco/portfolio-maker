@@ -74,7 +74,14 @@ class PortfolioController extends Controller
         $template = Template::where('key', $portfolio->template_key)->firstOrFail();
 
         return Inertia::render('Portfolios/Preview', [
-            'portfolio' => $portfolio->only(['id', 'template_key', 'data', 'status']),
+            'portfolio' => [
+                'id' => $portfolio->id,
+                'template_key' => $portfolio->template_key,
+                'status' => $portfolio->status,
+                'data' => array_merge($portfolio->data ?? [], ($portfolio->data['show_resume'] ?? false) && $portfolio->resume_path
+                    ? ['resume_url' => '#resume-preview']
+                    : []),
+            ],
             'theme' => $template->theme_options,
             'watermark' => $portfolio->status !== 'published',
         ]);
@@ -139,6 +146,7 @@ class PortfolioController extends Controller
             'profile.github' => ['nullable', 'url:http,https', 'max:255'],
             'profile.website' => ['nullable', 'url:http,https', 'max:255'],
             'profile.photo_url' => ['nullable', 'url:https', 'max:500'],
+            'profile.show_resume' => ['nullable', 'boolean'],
         ];
 
         foreach (self::SECTION_FIELDS as $section => $fields) {
@@ -156,6 +164,8 @@ class PortfolioController extends Controller
 
     private function buildData(Portfolio $portfolio, array $profile): array
     {
+        $profile['show_resume'] = (bool) ($profile['show_resume'] ?? false);
+
         $profile['skills'] = array_values(array_filter(
             array_map('trim', explode(',', $profile['skills'] ?? ''))
         ));
