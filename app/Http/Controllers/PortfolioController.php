@@ -30,15 +30,20 @@ class PortfolioController extends Controller
             $validated['resume']
         );
 
-        $parsed = app(ResumeParser::class)->parse($path);
+        try {
+            $parsed = app(ResumeParser::class)->parse($path);
+        } catch (\Throwable $e) {
+            report($e);
+            $parsed = [];
+        }
 
         $portfolio = Portfolio::create([
             'user_id' => $request->user()->id,
             'template_key' => 'professional',
             'data' => [
-                'name' => $parsed['name'],
-                'email' => $parsed['email'],
-                'phone' => $parsed['phone'],
+                'name' => $parsed['name'] ?? null,
+                'email' => $parsed['email'] ?? null,
+                'phone' => $parsed['phone'] ?? null,
                 'headline' => $parsed['headline'],
                 'about' => $parsed['about'],
                 'skills' => $parsed['skills'],
