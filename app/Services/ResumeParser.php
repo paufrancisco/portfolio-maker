@@ -45,7 +45,8 @@ class ResumeParser
             return $result;
         }
 
-        $text = trim($text);
+        $text = trim((string) mb_convert_encoding($text, 'UTF-8', 'UTF-8'));
+        $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $text) ?? $text;
         $result['raw_text'] = $text;
         if ($text === '') {
             return $result;
@@ -110,12 +111,22 @@ class ResumeParser
             $sections[$current][] = $line;
         }
 
-        $result['about'] = $this->buildAbout($preamble, $sections);
-        $result['skills'] = $this->parseSkills($sections['skills'] ?? []);
-        $result['experience'] = $this->parseExperience($sections['experience'] ?? []);
-        $result['projects'] = $this->parseProjects($sections['projects'] ?? []);
-        $result['certifications'] = $this->parseCertifications($sections['certifications'] ?? []);
-        $result['education'] = $this->parseEducation($sections['education'] ?? []);
+        $steps = [
+            'about' => fn () => $this->buildAbout($preamble, $sections),
+            'skills' => fn () => $this->parseSkills($sections['skills'] ?? []),
+            'experience' => fn () => $this->parseExperience($sections['experience'] ?? []),
+            'projects' => fn () => $this->parseProjects($sections['projects'] ?? []),
+            'certifications' => fn () => $this->parseCertifications($sections['certifications'] ?? []),
+            'education' => fn () => $this->parseEducation($sections['education'] ?? []),
+        ];
+
+        foreach ($steps as $key => $step) {
+            try {
+                $result[$key] = $step();
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
         return $result;
     }
@@ -331,7 +342,7 @@ class ResumeParser
             $isBullet = (bool) preg_match('/^[•·▪●\-–*]/u', $line);
 
             if ($blockMode) {
-                $head = preg_split('/\s[–—-]\s/u', $clean)[0];
+                $head = (preg_split('/\s[–—-]\s/u', $clean) ?: [$clean])[0];
                 if (! $isBullet && $this->isUpper($head)) {
                     $flush();
                     $date = preg_match($datePat, $line, $m) ? $m[0] : '';
