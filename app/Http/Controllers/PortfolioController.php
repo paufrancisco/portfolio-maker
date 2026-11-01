@@ -58,6 +58,19 @@ class PortfolioController extends Controller
         ]);
     }
 
+    public function preview(Request $request, Portfolio $portfolio): Response
+    {
+        abort_unless($portfolio->user_id === $request->user()->id, 403);
+
+        $template = Template::where('key', $portfolio->template_key)->firstOrFail();
+
+        return Inertia::render('Portfolios/Preview', [
+            'portfolio' => $portfolio->only(['id', 'template_key', 'data', 'status']),
+            'theme' => $template->theme_options,
+            'watermark' => $portfolio->status !== 'published',
+        ]);
+    }
+
     public function update(Request $request, Portfolio $portfolio): RedirectResponse
     {
         abort_unless($portfolio->user_id === $request->user()->id, 403);
