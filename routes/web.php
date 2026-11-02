@@ -81,6 +81,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/portfolios/{portfolio}/images', [\App\Http\Controllers\PortfolioController::class, 'uploadImage'])->middleware('throttle:30,1')->name('portfolios.images');
     Route::post('/portfolios/{portfolio}/template', [\App\Http\Controllers\PortfolioController::class, 'setTemplate'])->name('portfolios.template');
     Route::post('/portfolios/{portfolio}/request-update', [\App\Http\Controllers\PortfolioController::class, 'requestUpdate'])->middleware('throttle:10,1')->name('portfolios.request-update');
+    Route::get('/resumes', [\App\Http\Controllers\ResumeController::class, 'index'])->name('resumes.index');
+    Route::post('/resumes', [\App\Http\Controllers\ResumeController::class, 'store'])->name('resumes.store');
+    Route::get('/resumes/{resume}/edit', [\App\Http\Controllers\ResumeController::class, 'edit'])->name('resumes.edit');
+    Route::put('/resumes/{resume}', [\App\Http\Controllers\ResumeController::class, 'update'])->name('resumes.update');
+    Route::delete('/resumes/{resume}', [\App\Http\Controllers\ResumeController::class, 'destroy'])->name('resumes.destroy');
 });
 
 require __DIR__.'/auth.php';
