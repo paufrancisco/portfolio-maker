@@ -8,7 +8,8 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
     name: '',
-    email: '',
+    // Reminder: the home page card passes ?email= so the client does not retype it
+    email: new URLSearchParams(window.location.search).get('email') ?? '',
     password: '',
     password_confirmation: '',
 });

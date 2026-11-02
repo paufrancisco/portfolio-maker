@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 
 defineProps({
     canLogin: Boolean,
@@ -17,7 +17,7 @@ const portfolioForm = useForm({ email: '', mode: 'upload' });
 const resumeForm = useForm({ email: '' });
 
 const steps = [
-    { n: 1, title: 'Tell us what you need', text: 'Pick a service and enter your email. No account or password.' },
+    { n: 1, title: 'Tell us what you need', text: 'Pick a service and enter your email. Thesis help and tutoring need no account.' },
     { n: 2, title: 'Review and pay', text: 'For thesis help and tutoring we send a price first. You pay by QR and upload your proof.' },
     { n: 3, title: 'Get your result', text: 'Your portfolio goes live, or your video and files arrive by email.' },
 ];
@@ -36,8 +36,9 @@ const resumeTemplates = [
 
 const submitThesis = () => thesisForm.get('/services/request');
 const submitTutor = () => tutorForm.get('/services/request');
-const submitPortfolio = () => portfolioForm.post('/start');
-const submitResume = () => resumeForm.post('/resume');
+// Reminder: portfolio clients sign up normally; the card only prefills their email
+const submitPortfolio = () => router.get('/register', { email: portfolioForm.email });
+// Reminder: Resume Maker is not built yet, so its card is disabled (no /resume route)
 </script>
 
 <template>
@@ -168,20 +169,6 @@ const submitResume = () => resumeForm.post('/resume');
                             Pick a template, add your details, and publish your own portfolio page.
                         </p>
                         <form class="mt-4 flex flex-1 flex-col space-y-3" @submit.prevent="submitPortfolio">
-                            <div class="grid grid-cols-2 gap-2 text-sm">
-                                <label
-                                    :class="[portfolioForm.mode === 'upload' ? 'border-blue-600 bg-blue-50' : 'border-gray-200', 'cursor-pointer rounded-lg border p-3 text-center']"
-                                >
-                                    <input v-model="portfolioForm.mode" type="radio" value="upload" class="sr-only" />
-                                    Upload my resume
-                                </label>
-                                <label
-                                    :class="[portfolioForm.mode === 'manual' ? 'border-blue-600 bg-blue-50' : 'border-gray-200', 'cursor-pointer rounded-lg border p-3 text-center']"
-                                >
-                                    <input v-model="portfolioForm.mode" type="radio" value="manual" class="sr-only" />
-                                    Fill up details
-                                </label>
-                            </div>
                             <input
                                 v-model="portfolioForm.email"
                                 type="email"
@@ -190,6 +177,7 @@ const submitResume = () => resumeForm.post('/resume');
                                 class="w-full rounded-lg border-gray-300 text-sm"
                             />
                             <p v-if="portfolioForm.errors.email" class="text-xs text-red-600">{{ portfolioForm.errors.email }}</p>
+                            <p class="text-xs text-gray-500">You will create a free account next.</p>
                             <button
                                 type="submit"
                                 :disabled="portfolioForm.processing"
@@ -206,23 +194,13 @@ const submitResume = () => resumeForm.post('/resume');
                         <p class="mt-2 flex-1 text-sm text-gray-600">
                             Choose a resume template, fill up your details, and get a ready-to-send resume.
                         </p>
-                        <form class="mt-5 space-y-3" @submit.prevent="submitResume">
-                            <input
-                                v-model="resumeForm.email"
-                                type="email"
-                                required
-                                placeholder="you@example.com"
-                                class="w-full rounded-lg border-gray-300 text-sm"
-                            />
-                            <p v-if="resumeForm.errors.email" class="text-xs text-red-600">{{ resumeForm.errors.email }}</p>
-                            <button
-                                type="submit"
-                                :disabled="resumeForm.processing"
-                                class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
-                            >
-                                Make my resume
-                            </button>
-                        </form>
+                        <button
+                            type="button"
+                            disabled
+                            class="mt-5 w-full cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
+                        >
+                            Coming soon
+                        </button>
                     </div>
                 </div>
             </section>
