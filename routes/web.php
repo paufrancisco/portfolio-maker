@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/resumes/{resume}/edit', [\App\Http\Controllers\ResumeController::class, 'edit'])->name('resumes.edit');
     Route::put('/resumes/{resume}', [\App\Http\Controllers\ResumeController::class, 'update'])->name('resumes.update');
     Route::delete('/resumes/{resume}', [\App\Http\Controllers\ResumeController::class, 'destroy'])->name('resumes.destroy');
+    Route::get('/resumes/{resume}/preview', [\App\Http\Controllers\ResumeController::class, 'preview'])->name('resumes.preview');
 });
 
 require __DIR__.'/auth.php';

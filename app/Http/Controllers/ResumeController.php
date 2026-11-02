@@ -120,6 +120,13 @@ class ResumeController extends Controller
         return back()->with('status', 'Resume saved.');
     }
 
+    public function preview(Request $request, Resume $resume)
+    {
+        $this->authorizeOwner($request, $resume);
+
+        return response()->view('resumes.'.$this->templateFor($resume), $this->viewData($resume));
+    }
+
     public function destroy(Request $request, Resume $resume): RedirectResponse
     {
         $this->authorizeOwner($request, $resume);
@@ -127,6 +134,20 @@ class ResumeController extends Controller
         $resume->delete();
 
         return redirect()->route('resumes.index');
+    }
+
+    // Reminder: the PDF in phase 3 must use these same two helpers so it matches the preview
+    private function templateFor(Resume $resume): string
+    {
+        return array_key_exists($resume->template_key, Resume::TEMPLATES) ? $resume->template_key : 'classic';
+    }
+
+    private function viewData(Resume $resume): array
+    {
+        return [
+            'title' => $resume->title,
+            'd' => array_replace_recursive(Resume::blankData(), $resume->data ?? []),
+        ];
     }
 
     private function authorizeOwner(Request $request, Resume $resume): void

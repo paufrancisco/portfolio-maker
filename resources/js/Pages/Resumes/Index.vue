@@ -38,6 +38,9 @@
                         <Link :href="route('resumes.edit', r.id)" class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
                             Edit
                         </Link>
+                        <a :href="route('resumes.preview', r.id)" target="_blank" rel="noopener" class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Preview
+                        </a>
                         <button type="button" class="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50" @click="remove(r)">
                             Delete
                         </button>

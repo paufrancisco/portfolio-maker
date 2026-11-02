@@ -9,6 +9,9 @@
         <div class="py-8">
             <form class="mx-auto max-w-3xl space-y-6 px-4 sm:px-6 lg:px-8" @submit.prevent="save">
                 <Link :href="route('resumes.index')" class="text-sm text-blue-600 hover:text-blue-500">&larr; My resumes</Link>
+                <a :href="route('resumes.preview', resume.id)" target="_blank" rel="noopener" class="ml-4 text-sm text-blue-600 hover:text-blue-500">
+                    Preview saved version
+                </a>
 
                 <div v-if="errorList.length" class="rounded-lg bg-red-50 p-4 text-sm text-red-800">
                     <p class="font-semibold">Please fix the following:</p>
