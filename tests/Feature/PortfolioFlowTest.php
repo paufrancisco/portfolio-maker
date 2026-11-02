@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Payment;
 use App\Models\Portfolio;
+use App\Models\Template;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -242,5 +243,66 @@ class PortfolioFlowTest extends TestCase
         $portfolio->refresh();
         $this->assertSame('New headline', $portfolio->published_data['headline']);
         $this->assertNull($portfolio->update_requested_at);
+    }
+
+    private function seedTemplates(): void
+    {
+        Template::create(['key' => 'professional', 'name' => 'Professional']);
+        Template::create(['key' => 'pink', 'name' => 'Pink']);
+    }
+
+    public function test_update_ignores_template_change_on_published_portfolio(): void
+    {
+        $this->seedTemplates();
+        $customer = $this->customer();
+        $portfolio = $this->portfolio($customer, [
+            'status' => 'published',
+            'slug' => 'jane-doe',
+            'published_data' => ['name' => 'Jane Doe'],
+        ]);
+
+        $this->actingAs($customer)
+            ->put(route('portfolios.update', $portfolio), [
+                'template_key' => 'pink',
+                'profile' => ['name' => 'Jane Doe', 'headline' => 'Edited headline'],
+            ])
+            ->assertRedirect();
+
+        $portfolio->refresh();
+        $this->assertSame('professional', $portfolio->template_key);
+        $this->assertSame('Edited headline', $portfolio->data['headline']);
+    }
+
+    public function test_update_changes_template_on_draft_portfolio(): void
+    {
+        $this->seedTemplates();
+        $customer = $this->customer();
+        $portfolio = $this->portfolio($customer);
+
+        $this->actingAs($customer)
+            ->put(route('portfolios.update', $portfolio), [
+                'template_key' => 'pink',
+                'profile' => ['name' => 'Jane Doe'],
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('pink', $portfolio->fresh()->template_key);
+    }
+
+    public function test_set_template_is_rejected_for_published_portfolio(): void
+    {
+        $this->seedTemplates();
+        $customer = $this->customer();
+        $portfolio = $this->portfolio($customer, [
+            'status' => 'published',
+            'slug' => 'jane-doe',
+            'published_data' => ['name' => 'Jane Doe'],
+        ]);
+
+        $this->actingAs($customer)
+            ->post(route('portfolios.template', $portfolio), ['template_key' => 'pink'])
+            ->assertStatus(422);
+
+        $this->assertSame('professional', $portfolio->fresh()->template_key);
     }
 }
