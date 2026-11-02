@@ -6,6 +6,7 @@ defineProps({
     canRegister: Boolean,
     reviews: { type: Array, default: () => [] },
     reviewStats: { type: Object, default: () => ({ count: 0, average: 0 }) },
+    portfolioPrice: { type: Number, default: null },
 });
 
 const siteName = 'CampusCraft';
@@ -53,6 +54,7 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                     <a href="#services" class="hover:text-gray-900">Services</a>
                     <a href="#templates" class="hover:text-gray-900">Templates</a>
                     <a href="#how" class="hover:text-gray-900">How it works</a>
+                    <a href="#faq" class="hover:text-gray-900">FAQ</a>
                     <a v-if="reviews.length" href="#reviews" class="hover:text-gray-900">Reviews</a>
                 </nav>
                 <div class="flex items-center gap-4 text-sm">
@@ -112,6 +114,7 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                         <p class="mt-2 flex-1 text-sm text-gray-600">
                             Propose a system you want built, or ask for help debugging your existing project. Price is quoted after review.
                         </p>
+                        <p class="mt-4 text-sm font-semibold text-gray-900">Quoted after review</p>
                         <form class="mt-5 space-y-3" @submit.prevent="submitThesis">
                             <select v-model="thesisForm.type" class="w-full rounded-lg border-gray-300 text-sm">
                                 <option value="thesis_build">Build a system</option>
@@ -140,6 +143,7 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                         <p class="mt-2 flex-1 text-sm text-gray-600">
                             Send your Math or Programming problem and get a screen-recorded walkthrough with voice-over. Price is quoted after review.
                         </p>
+                        <p class="mt-4 text-sm font-semibold text-gray-900">Quoted after review</p>
                         <form class="mt-5 space-y-3" @submit.prevent="submitTutor">
                             <select v-model="tutorForm.type" class="w-full rounded-lg border-gray-300 text-sm">
                                 <option value="math_tutor">Math</option>
@@ -168,6 +172,7 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                         <p class="mt-2 text-sm text-gray-600">
                             Pick a template, add your details, and publish your own portfolio page.
                         </p>
+                        <p class="mt-4 text-sm font-semibold text-gray-900">{{ portfolioPrice ? 'PHP ' + Number(portfolioPrice).toLocaleString() + ' to publish' : 'Contact for price' }}</p>
                         <form class="mt-4 flex flex-1 flex-col space-y-3" @submit.prevent="submitPortfolio">
                             <input
                                 v-model="portfolioForm.email"
@@ -194,6 +199,7 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                         <p class="mt-2 flex-1 text-sm text-gray-600">
                             Choose a resume template, fill up your details, and get a ready-to-send resume.
                         </p>
+                        <p class="mt-4 text-sm font-semibold text-gray-900">Free</p>
                         <Link
                             href="/register"
                             class="mt-5 block w-full rounded-lg bg-emerald-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-emerald-500"
@@ -274,6 +280,45 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                             <p class="mt-1 text-xs text-gray-400">{{ r.service }}</p>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section id="faq" class="mx-auto max-w-3xl scroll-mt-20 px-6 py-16">
+                <h2 class="text-center text-3xl font-bold">Frequently asked questions</h2>
+                <div class="mt-8 space-y-3">
+                    <details class="rounded-xl border bg-white p-4 shadow-sm">
+                        <summary class="cursor-pointer font-medium">How does payment work?</summary>
+                        <p class="mt-2 text-sm text-gray-600">Pay by QR, then upload a screenshot of your payment with the reference number. We check it and confirm by email. If the proof is rejected, you will see a note explaining why and can upload a new one.</p>
+                    </details>
+                    <details class="rounded-xl border bg-white p-4 shadow-sm">
+                        <summary class="cursor-pointer font-medium">How much do thesis help and tutoring cost?</summary>
+                        <p class="mt-2 text-sm text-gray-600">Each request is quoted after we review it, because the work differs a lot. You receive the quote on your request page and pay before we start.</p>
+                    </details>
+                    <details class="rounded-xl border bg-white p-4 shadow-sm">
+                        <summary class="cursor-pointer font-medium">Is tutoring live?</summary>
+                        <p class="mt-2 text-sm text-gray-600">No. Tutoring is a recorded walkthrough, so you can watch it at your own pace. We send it as an unlisted YouTube link or a Google Drive link.</p>
+                    </details>
+                    <details class="rounded-xl border bg-white p-4 shadow-sm">
+                        <summary class="cursor-pointer font-medium">Do I need an account?</summary>
+                        <p class="mt-2 text-sm text-gray-600">Not for thesis help or tutoring. You get a private link by email to follow your request. For the online portfolio and the resume maker you register with your email and password.</p>
+                    </details>
+                    <details class="rounded-xl border bg-white p-4 shadow-sm">
+                        <summary class="cursor-pointer font-medium">Can I change my portfolio after it is published?</summary>
+                        <p class="mt-2 text-sm text-gray-600">Yes. Your edits stay as a draft until you request an update, so visitors keep seeing the published version. The template is locked after you publish.</p>
+                    </details>
+                    <details class="rounded-xl border bg-white p-4 shadow-sm">
+                        <summary class="cursor-pointer font-medium">Is the resume maker really free?</summary>
+                        <p class="mt-2 text-sm text-gray-600">Yes, for now. Choose a template, fill in the form and download a PDF. Word export and a cover letter may come later.</p>
+                    </details>
+                    <details class="rounded-xl border bg-white p-4 shadow-sm">
+                        <summary class="cursor-pointer font-medium">Can I get a refund?</summary>
+                        <p class="mt-2 text-sm text-gray-600">Refunds are handled case by case. Email us at {{ contactEmail }} and we will sort it out.</p>
+                    </details>
+                    <details class="rounded-xl border bg-white p-4 shadow-sm">
+                        <summary class="cursor-pointer font-medium">What happens to my data?</summary>
+                        <p class="mt-2 text-sm text-gray-600">We keep it until you ask us to delete it. See the <Link href="/privacy" class="underline">Privacy page</Link> for details.</p>
+                    </details>
                 </div>
             </section>
 

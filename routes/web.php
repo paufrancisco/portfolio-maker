@@ -13,6 +13,7 @@ Route::get('/', function () {
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'portfolioPrice' => config('portfolio.price') > 0 ? config('portfolio.price') : null,
         'reviews' => ! $hasReviews ? [] : \App\Models\Review::with('serviceRequest')->where('status', 'approved')->latest('id')->take(12)->get()
             ->map(fn ($r) => ['name' => $r->name, 'rating' => $r->rating, 'comment' => $r->comment, 'service' => $r->serviceRequest->typeLabel()])->values(),
         'reviewStats' => [
