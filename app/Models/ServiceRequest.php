@@ -25,11 +25,13 @@ class ServiceRequest extends Model
     protected $fillable = [
         'type', 'email', 'details', 'attachment_path', 'token', 'status',
         'quote_amount', 'quote_note', 'delivery_url', 'admin_note', 'paid_at',
+        'payment_reference', 'payment_proof_path', 'payment_submitted_at',
     ];
 
     protected $casts = [
         'quote_amount' => 'decimal:2',
         'paid_at' => 'datetime',
+        'payment_submitted_at' => 'datetime',
     ];
 
     public function typeLabel(): string

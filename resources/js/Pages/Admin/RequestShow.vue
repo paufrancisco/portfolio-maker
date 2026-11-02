@@ -1,26 +1,3 @@
-<script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
-
-const props = defineProps({
-    serviceRequest: Object,
-});
-
-const base = `/admin/requests/${props.serviceRequest.id}`;
-
-const quoteForm = useForm({
-    quote_amount: props.serviceRequest.quote_amount || '',
-    quote_note: props.serviceRequest.quote_note || '',
-});
-const deliverForm = useForm({ delivery_url: '' });
-const rejectForm = useForm({ admin_note: '' });
-
-const sendQuote = () => quoteForm.post(`${base}/quote`, { preserveScroll: true });
-const markPaid = () => router.post(`${base}/paid`, {}, { preserveScroll: true });
-const deliver = () => deliverForm.post(`${base}/deliver`, { preserveScroll: true });
-const reject = () => rejectForm.post(`${base}/reject`, { preserveScroll: true });
-</script>
-
 <template>
     <Head title="Request" />
 
@@ -75,13 +52,38 @@ const reject = () => rejectForm.post(`${base}/reject`, { preserveScroll: true })
                     </button>
                 </form>
 
-                <!-- Mark paid (temporary until the client payment page exists) -->
-                <div v-if="['quoted', 'payment_submitted'].includes(serviceRequest.status)" class="rounded-lg bg-white p-6 shadow-sm">
-                    <h3 class="font-medium">Payment received?</h3>
-                    <p class="mt-1 text-xs text-gray-500">Only mark as paid after you have confirmed the money arrived.</p>
-                    <button class="mt-3 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500" @click="markPaid">
-                        Mark as paid
+                <!-- Payment proof review -->
+                <div v-if="serviceRequest.status === 'payment_submitted'" class="space-y-4 rounded-lg bg-white p-6 shadow-sm">
+                    <h3 class="font-medium">Review payment proof</h3>
+                    <div class="text-sm text-gray-700">
+                        <p>Amount quoted: <span class="font-medium">PHP {{ Number(serviceRequest.quote_amount).toFixed(2) }}</span></p>
+                        <p>Reference: <span class="font-medium">{{ serviceRequest.payment_reference }}</span></p>
+                        <p class="text-xs text-gray-500">Submitted {{ serviceRequest.payment_submitted_at }}</p>
+                    </div>
+
+                    <a
+                        v-if="serviceRequest.proof_url"
+                        :href="serviceRequest.proof_url"
+                        target="_blank"
+                        rel="noopener"
+                        class="inline-block text-sm font-medium text-blue-600 hover:text-blue-500"
+                    >
+                        Open proof (link expires in 10 minutes)
+                    </a>
+                    <p v-else class="text-sm text-red-600">The proof link could not be created. Reload the page to try again.</p>
+
+                    <p class="text-xs text-gray-500">Only approve after you have confirmed the money arrived.</p>
+                    <button class="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500" @click="approvePayment">
+                        Approve payment
                     </button>
+
+                    <form class="space-y-3 border-t pt-4" @submit.prevent="rejectPayment">
+                        <textarea v-model="paymentRejectForm.admin_note" rows="2" required placeholder="Reason for rejecting the proof (sent to the client)" class="w-full rounded-lg border-gray-300 text-sm"></textarea>
+                        <p v-if="paymentRejectForm.errors.admin_note" class="text-xs text-red-600">{{ paymentRejectForm.errors.admin_note }}</p>
+                        <button type="submit" :disabled="paymentRejectForm.processing" class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 disabled:opacity-50">
+                            Reject proof and email the client
+                        </button>
+                    </form>
                 </div>
 
                 <!-- Deliver -->
@@ -99,7 +101,7 @@ const reject = () => rejectForm.post(`${base}/reject`, { preserveScroll: true })
                     <a :href="serviceRequest.delivery_url" target="_blank" rel="noopener" class="text-blue-600">{{ serviceRequest.delivery_url }}</a>
                 </div>
 
-                <!-- Reject -->
+                <!-- Reject request -->
                 <form
                     v-if="['received', 'quoted'].includes(serviceRequest.status)"
                     class="space-y-3 rounded-lg bg-white p-6 shadow-sm"
@@ -120,3 +122,30 @@ const reject = () => rejectForm.post(`${base}/reject`, { preserveScroll: true })
         </div>
     </AuthenticatedLayout>
 </template>
+
+<script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+
+const props = defineProps({
+    serviceRequest: Object,
+});
+
+const base = `/admin/requests/${props.serviceRequest.id}`;
+
+const quoteForm = useForm({
+    quote_amount: props.serviceRequest.quote_amount || '',
+    quote_note: props.serviceRequest.quote_note || '',
+});
+const deliverForm = useForm({ delivery_url: '' });
+const rejectForm = useForm({ admin_note: '' });
+const paymentRejectForm = useForm({ admin_note: '' });
+
+const sendQuote = () => quoteForm.post(`${base}/quote`, { preserveScroll: true });
+const deliver = () => deliverForm.post(`${base}/deliver`, { preserveScroll: true });
+const reject = () => rejectForm.post(`${base}/reject`, { preserveScroll: true });
+
+// Reminder: approve/reject payment only apply while status is payment_submitted
+const approvePayment = () => router.post(`${base}/payment/approve`, {}, { preserveScroll: true });
+const rejectPayment = () => paymentRejectForm.post(`${base}/payment/reject`, { preserveScroll: true });
+</script>

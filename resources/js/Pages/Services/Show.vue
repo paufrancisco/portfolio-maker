@@ -1,16 +1,3 @@
-<script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
-
-const props = defineProps({
-    serviceRequest: Object,
-    token: String,
-});
-
-const reviewForm = useForm({ name: '', rating: 5, comment: '' });
-
-const submitReview = () => reviewForm.post(`${window.location.pathname}/review`);
-</script>
-
 <template>
     <Head title="Your request" />
 
@@ -36,9 +23,17 @@ const submitReview = () => reviewForm.post(`${window.location.pathname}/review`)
                 </p>
 
                 <div v-if="serviceRequest.quote_amount" class="mt-4 rounded-lg bg-blue-50 p-4 text-sm">
-                    <p class="font-medium">Quote: {{ serviceRequest.quote_amount }}</p>
+                    <p class="font-medium">Quote: PHP {{ Number(serviceRequest.quote_amount).toFixed(2) }}</p>
                     <p v-if="serviceRequest.quote_note" class="mt-1 text-gray-600">{{ serviceRequest.quote_note }}</p>
                 </div>
+
+                <p v-if="serviceRequest.status === 'payment_submitted'" class="mt-4 rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800">
+                    Payment received (ref: {{ serviceRequest.payment_reference }}). We are checking it now and will email you once it is confirmed.
+                </p>
+
+                <p v-if="serviceRequest.status === 'paid'" class="mt-4 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+                    Payment confirmed. We are working on your request now.
+                </p>
 
                 <a
                     v-if="serviceRequest.delivery_url"
@@ -49,6 +44,50 @@ const submitReview = () => reviewForm.post(`${window.location.pathname}/review`)
                 >
                     Open your video
                 </a>
+            </div>
+
+            <!-- Pay now: only while quoted -->
+            <div v-if="serviceRequest.can_pay" class="mt-6 space-y-4 rounded-xl border bg-white p-6 shadow-sm">
+                <h2 class="text-sm font-medium">Pay to get started</h2>
+
+                <div v-if="serviceRequest.payment_note" class="rounded-lg bg-red-50 p-4 text-sm text-red-800">
+                    <p class="font-semibold">Your last payment proof could not be verified.</p>
+                    <p class="mt-1">Reason: {{ serviceRequest.payment_note }}</p>
+                    <p class="mt-1">Please upload a new proof below.</p>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-sm text-gray-600">Scan to pay via {{ payment.wallet_label }}</p>
+                    <img :src="payment.qr_url" alt="Payment QR" class="mx-auto my-4 max-h-80" />
+                    <p class="text-2xl font-bold text-gray-800">PHP {{ Number(serviceRequest.quote_amount).toFixed(2) }}</p>
+                </div>
+
+                <form class="space-y-4" @submit.prevent="submitPayment">
+                    <div>
+                        <label class="block text-sm font-medium">Reference number</label>
+                        <input v-model="payForm.reference_no" type="text" required maxlength="50" class="mt-1 w-full rounded-lg border-gray-300 text-sm" />
+                        <p v-if="payForm.errors.reference_no" class="mt-1 text-xs text-red-600">{{ payForm.errors.reference_no }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium">Proof of payment (screenshot or PDF)</label>
+                        <input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.pdf"
+                            class="mt-1 block w-full text-sm text-gray-700"
+                            @input="payForm.proof = $event.target.files[0]"
+                        />
+                        <p v-if="payForm.errors.proof" class="mt-1 text-xs text-red-600">{{ payForm.errors.proof }}</p>
+                    </div>
+
+                    <button
+                        type="submit"
+                        :disabled="payForm.processing || !payForm.proof"
+                        class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+                    >
+                        {{ payForm.processing ? 'Submitting...' : 'Submit payment' }}
+                    </button>
+                </form>
             </div>
 
             <div class="mt-6 rounded-xl border bg-white p-6 shadow-sm">
@@ -114,3 +153,24 @@ const submitReview = () => reviewForm.post(`${window.location.pathname}/review`)
         </main>
     </div>
 </template>
+
+<script setup>
+import { Head, Link, useForm } from '@inertiajs/vue3';
+
+const props = defineProps({
+    serviceRequest: Object,
+    payment: Object,
+    token: String,
+});
+
+const reviewForm = useForm({ name: '', rating: 5, comment: '' });
+const payForm = useForm({ reference_no: '', proof: null });
+
+// Reminder: both forms post to the current /services/{token} path
+const submitReview = () => reviewForm.post(`${window.location.pathname}/review`);
+const submitPayment = () =>
+    payForm.post(`${window.location.pathname}/payment`, {
+        preserveScroll: true,
+        onSuccess: () => payForm.reset(),
+    });
+</script>

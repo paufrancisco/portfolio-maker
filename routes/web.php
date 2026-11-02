@@ -70,7 +70,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/requests', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'index'])->name('admin.requests.index');
         Route::get('/requests/{serviceRequest}', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'show'])->name('admin.requests.show');
         Route::post('/requests/{serviceRequest}/quote', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'quote'])->name('admin.requests.quote');
-        Route::post('/requests/{serviceRequest}/paid', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'markPaid'])->name('admin.requests.paid');
+        Route::post('/requests/{serviceRequest}/payment/approve', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'approvePayment'])->name('admin.requests.payment.approve');
+        Route::post('/requests/{serviceRequest}/payment/reject', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'rejectPayment'])->name('admin.requests.payment.reject');
         Route::post('/requests/{serviceRequest}/deliver', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'deliver'])->name('admin.requests.deliver');
         Route::post('/requests/{serviceRequest}/reject', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'reject'])->name('admin.requests.reject');
         Route::post('/reviews/{review}/approve', [\App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('admin.reviews.approve');
@@ -87,6 +88,7 @@ require __DIR__.'/auth.php';
 Route::get('/services/request', [\App\Http\Controllers\ServiceRequestController::class, 'create'])->name('services.create');
 Route::post('/services/request', [\App\Http\Controllers\ServiceRequestController::class, 'store'])->middleware('throttle:5,1')->name('services.store');
 Route::post('/services/{token}/review', [\App\Http\Controllers\ReviewController::class, 'store'])->middleware('throttle:5,1')->name('services.review');
+Route::post('/services/{token}/payment', [\App\Http\Controllers\ServiceRequestController::class, 'pay'])->middleware('throttle:5,1')->name('services.pay');
 Route::get('/services/{token}', [\App\Http\Controllers\ServiceRequestController::class, 'show'])->middleware('throttle:60,1')->name('services.show');
 
 Route::get('/p/{slug}', [\App\Http\Controllers\PublicPortfolioController::class, 'show'])->name('portfolios.public');

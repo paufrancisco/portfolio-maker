@@ -46,6 +46,9 @@ class ServiceRequestController extends Controller
                 'quote_note' => $serviceRequest->quote_note,
                 'delivery_url' => $serviceRequest->delivery_url,
                 'admin_note' => $serviceRequest->admin_note,
+                'payment_reference' => $serviceRequest->payment_reference,
+                'payment_submitted_at' => $serviceRequest->payment_submitted_at?->toDayDateTimeString(),
+                'proof_url' => $this->proofUrl($serviceRequest),
                 'created_at' => $serviceRequest->created_at->toDayDateTimeString(),
                 'attachment_url' => $this->attachmentUrl($serviceRequest),
                 'status_url' => route('services.show', $serviceRequest->token),
@@ -79,16 +82,36 @@ class ServiceRequestController extends Controller
         return back();
     }
 
-    public function markPaid(ServiceRequest $serviceRequest): RedirectResponse
+    public function approvePayment(ServiceRequest $serviceRequest): RedirectResponse
     {
-        abort_unless(in_array($serviceRequest->status, ['quoted', 'payment_submitted'], true), 422);
+        abort_unless($serviceRequest->status === 'payment_submitted', 422);
 
-        $serviceRequest->update(['status' => 'paid', 'paid_at' => now()]);
+        $serviceRequest->update(['status' => 'paid', 'paid_at' => now(), 'admin_note' => null]);
 
         $this->notify(
             $serviceRequest,
             'Payment received',
             "We received your payment for {$serviceRequest->typeLabel()}. We are working on it now.\n\n"
+            .route('services.show', $serviceRequest->token)
+        );
+
+        return back();
+    }
+
+    public function rejectPayment(Request $request, ServiceRequest $serviceRequest): RedirectResponse
+    {
+        abort_unless($serviceRequest->status === 'payment_submitted', 422);
+
+        $validated = $request->validate([
+            'admin_note' => ['required', 'string', 'max:500'],
+        ]);
+
+        $serviceRequest->update(['status' => 'quoted', 'admin_note' => $validated['admin_note']]);
+
+        $this->notify(
+            $serviceRequest,
+            'Payment needs your attention',
+            "Your payment proof could not be verified.\n\nReason: {$validated['admin_note']}\n\nPlease upload a new proof here:\n"
             .route('services.show', $serviceRequest->token)
         );
 
@@ -136,6 +159,21 @@ class ServiceRequestController extends Controller
         );
 
         return back();
+    }
+
+    private function proofUrl(ServiceRequest $serviceRequest): ?string
+    {
+        if (! $serviceRequest->payment_proof_path) {
+            return null;
+        }
+
+        try {
+            return Storage::disk('s3')->temporaryUrl($serviceRequest->payment_proof_path, now()->addMinutes(10));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
     }
 
     private function attachmentUrl(ServiceRequest $serviceRequest): ?string

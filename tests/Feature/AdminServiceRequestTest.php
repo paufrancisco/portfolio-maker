@@ -85,22 +85,24 @@ class AdminServiceRequestTest extends TestCase
         $this->assertNull($serviceRequest->fresh()->delivery_url);
     }
 
-    public function test_admin_can_mark_paid_and_deliver(): void
+    public function test_admin_can_approve_payment_and_deliver(): void
     {
-        $serviceRequest = $this->request('quoted');
         $admin = $this->admin();
+        $serviceRequest = $this->request('payment_submitted');
 
-        $this->actingAs($admin)->post("/admin/requests/{$serviceRequest->id}/paid")->assertRedirect();
-        $this->assertSame('paid', $serviceRequest->fresh()->status);
-        $this->assertNotNull($serviceRequest->fresh()->paid_at);
+        $this->actingAs($admin)->post("/admin/requests/{$serviceRequest->id}/payment/approve")->assertRedirect();
+
+        $serviceRequest->refresh();
+        $this->assertSame('paid', $serviceRequest->status);
+        $this->assertNotNull($serviceRequest->paid_at);
 
         $this->actingAs($admin)
-            ->post("/admin/requests/{$serviceRequest->id}/deliver", ['delivery_url' => 'https://youtu.be/abc'])
+            ->post("/admin/requests/{$serviceRequest->id}/deliver", ['delivery_url' => 'https://example.com/video'])
             ->assertRedirect();
 
         $serviceRequest->refresh();
         $this->assertSame('delivered', $serviceRequest->status);
-        $this->assertSame('https://youtu.be/abc', $serviceRequest->delivery_url);
+        $this->assertSame('https://example.com/video', $serviceRequest->delivery_url);
     }
 
     public function test_admin_can_reject_with_a_note(): void
