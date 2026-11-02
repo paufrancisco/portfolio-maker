@@ -22,7 +22,7 @@ class CleanOrphanImagesTest extends TestCase
         Storage::fake('images');
     }
 
-    private function put(string $path, bool $old = true): void
+    private function putImage(string $path, bool $old = true): void
     {
         Storage::disk('images')->put($path, 'x');
 
@@ -33,7 +33,7 @@ class CleanOrphanImagesTest extends TestCase
 
     public function test_dry_run_lists_but_deletes_nothing(): void
     {
-        $this->put('portfolios/1/orphan.jpg');
+        $this->putImage('portfolios/1/orphan.jpg');
 
         Artisan::call('portfolio:clean-images');
 
@@ -45,11 +45,11 @@ class CleanOrphanImagesTest extends TestCase
     {
         $disk = Storage::disk('images');
 
-        $this->put('portfolios/1/orphan.jpg');
-        $this->put('portfolios/1/photo.jpg');
-        $this->put('portfolios/1/proj.jpg');
-        $this->put('portfolios/1/recent.jpg', old: false);
-        $this->put('site/payment-qr.jpg');
+        $this->putImage('portfolios/1/orphan.jpg');
+        $this->putImage('portfolios/1/photo.jpg');
+        $this->putImage('portfolios/1/proj.jpg');
+        $this->putImage('portfolios/1/recent.jpg', old: false);
+        $this->putImage('site/payment-qr.jpg');
 
         Portfolio::create([
             'user_id' => User::factory()->create()->id,
@@ -72,7 +72,7 @@ class CleanOrphanImagesTest extends TestCase
     public function test_refuses_to_delete_more_than_max(): void
     {
         foreach (['a', 'b', 'c'] as $name) {
-            $this->put("portfolios/1/$name.jpg");
+            $this->putImage("portfolios/1/$name.jpg");
         }
 
         $this->assertSame(1, Artisan::call('portfolio:clean-images', ['--delete' => true, '--max' => 2]));
