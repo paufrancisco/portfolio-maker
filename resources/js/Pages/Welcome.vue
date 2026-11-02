@@ -293,6 +293,10 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
         <footer class="border-t bg-white">
             <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-gray-500 sm:flex-row">
                 <span>© {{ new Date().getFullYear() }} {{ siteName }}</span>
+                <span class="space-x-4">
+                    <Link href="/terms" class="hover:text-gray-900">Terms</Link>
+                    <Link href="/privacy" class="hover:text-gray-900">Privacy</Link>
+                </span>
                 <a :href="`mailto:${contactEmail}`" class="hover:text-gray-900">Contact: {{ contactEmail }}</a>
             </div>
         </footer>

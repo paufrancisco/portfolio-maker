@@ -97,6 +97,8 @@ Route::post('/services/request', [\App\Http\Controllers\ServiceRequestController
 Route::post('/services/{token}/review', [\App\Http\Controllers\ReviewController::class, 'store'])->middleware('throttle:5,1')->name('services.review');
 Route::post('/services/{token}/payment', [\App\Http\Controllers\ServiceRequestController::class, 'pay'])->middleware('throttle:5,1')->name('services.pay');
 Route::get('/services/{token}', [\App\Http\Controllers\ServiceRequestController::class, 'show'])->middleware('throttle:60,1')->name('services.show');
+Route::get('/terms', fn () => \Inertia\Inertia::render('Legal/Show', ['page' => 'terms']))->name('legal.terms');
+Route::get('/privacy', fn () => \Inertia\Inertia::render('Legal/Show', ['page' => 'privacy']))->name('legal.privacy');
 
 Route::get('/p/{slug}', [\App\Http\Controllers\PublicPortfolioController::class, 'show'])->name('portfolios.public');
 Route::get('/p/{slug}/resume', [\App\Http\Controllers\PublicPortfolioController::class, 'resume'])->middleware('throttle:20,1')->name('portfolios.resume');

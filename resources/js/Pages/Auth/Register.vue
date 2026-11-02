@@ -109,6 +109,14 @@ const submit = () => {
                     Register
                 </PrimaryButton>
             </div>
+
+            <!-- Reminder: this line is where clients accept the legal pages -->
+            <p class="mt-4 text-xs text-gray-500">
+                By creating an account you agree to our
+                <a href="/terms" target="_blank" rel="noopener" class="underline hover:text-gray-700">Terms</a>
+                and
+                <a href="/privacy" target="_blank" rel="noopener" class="underline hover:text-gray-700">Privacy Policy</a>.
+            </p>
         </form>
     </GuestLayout>
 </template>
