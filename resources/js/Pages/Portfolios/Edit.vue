@@ -152,6 +152,7 @@ const area =
                     <!-- Template -->
                     <div>
                         <InputLabel value="Choose a template" />
+                        <p v-if="portfolio.status === 'published'" class="mt-1 text-xs text-gray-500">The template is locked while your portfolio is published.</p>
                         <div class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
                             <label
                                 v-for="t in templates"
@@ -159,7 +160,7 @@ const area =
                                 class="cursor-pointer rounded-lg border-2 p-4 text-center"
                                 :class="form.template_key === t.key ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
                             >
-                                <input type="radio" class="sr-only" :value="t.key" v-model="form.template_key" />
+                                <input type="radio" class="sr-only" :value="t.key" v-model="form.template_key" :disabled="portfolio.status === 'published'" />
                                 <div class="mx-auto mb-2 h-6 w-full rounded" :style="{ background: t.theme_options?.accent }"></div>
                                 <span class="text-sm font-medium text-gray-800">{{ t.name }}</span>
                             </label>

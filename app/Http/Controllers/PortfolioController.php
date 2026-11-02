@@ -131,7 +131,7 @@ class PortfolioController extends Controller
         ]);
 
         $portfolio->update([
-            'template_key' => $validated['template_key'],
+            'template_key' => $portfolio->status === 'published' ? $portfolio->template_key : $validated['template_key'],
             'data' => $this->buildData($portfolio, $validated['profile']),
         ]);
 
