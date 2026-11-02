@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
     });
     Route::put('/portfolios/{portfolio}', [\App\Http\Controllers\PortfolioController::class, 'update'])->name('portfolios.update');
     Route::post('/portfolios/{portfolio}/images', [\App\Http\Controllers\PortfolioController::class, 'uploadImage'])->middleware('throttle:30,1')->name('portfolios.images');
+    Route::post('/portfolios/{portfolio}/template', [\App\Http\Controllers\PortfolioController::class, 'setTemplate'])->name('portfolios.template');
     Route::post('/portfolios/{portfolio}/request-update', [\App\Http\Controllers\PortfolioController::class, 'requestUpdate'])->middleware('throttle:10,1')->name('portfolios.request-update');
 });
 

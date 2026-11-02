@@ -76,20 +76,49 @@ class PortfolioController extends Controller
     {
         abort_unless($portfolio->user_id === $request->user()->id, 403);
 
-        $template = Template::where('key', $portfolio->template_key)->firstOrFail();
+        $embed = $request->boolean('embed');
+        $templates = Template::where('is_active', true)->get(['key', 'name', 'theme_options']);
+
+        $key = $request->query('template');
+        if (! $key || ! $templates->contains('key', $key)) {
+            $key = $portfolio->template_key;
+        }
+
+        $template = Template::where('key', $key)->first()
+            ?? Template::where('key', 'professional')->first();
+
+        $data = $portfolio->data ?? [];
+        if (($data['show_resume'] ?? false) && $portfolio->resume_path) {
+            $data['resume_url'] = '#resume-preview';
+        }
 
         return Inertia::render('Portfolios/Preview', [
             'portfolio' => [
                 'id' => $portfolio->id,
-                'template_key' => $portfolio->template_key,
+                'template_key' => $key,
+                'saved_template_key' => $portfolio->template_key,
                 'status' => $portfolio->status,
-                'data' => array_merge($portfolio->data ?? [], ($portfolio->data['show_resume'] ?? false) && $portfolio->resume_path
-                    ? ['resume_url' => '#resume-preview']
-                    : []),
+                'data' => $data,
             ],
-            'theme' => $template->theme_options,
+            'theme' => $template?->theme_options ?? [],
             'watermark' => $portfolio->status !== 'published',
+            'templates' => $embed ? null : $templates,
         ]);
+    }
+
+    public function setTemplate(Request $request, Portfolio $portfolio): RedirectResponse
+    {
+        abort_unless($portfolio->user_id === $request->user()->id, 403);
+        // The live page reads template_key directly, so changing it on a published portfolio would go live instantly.
+        abort_unless($portfolio->status !== 'published', 422);
+
+        $validated = $request->validate([
+            'template_key' => ['required', 'exists:templates,key'],
+        ]);
+
+        $portfolio->update(['template_key' => $validated['template_key']]);
+
+        return back()->with('status', 'Template saved.');
     }
 
     public function update(Request $request, Portfolio $portfolio): RedirectResponse
