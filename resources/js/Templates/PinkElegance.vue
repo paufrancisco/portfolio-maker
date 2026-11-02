@@ -12,7 +12,7 @@ const t = computed(() => ({
     ...(props.theme ?? {}),
 }));
 
-const { skills, experience, projects, certifications, education, initial, links, nav, tags } =
+const { skills, skillGroups, experience, projects, certifications, education, initial, links, nav, tags } =
     usePortfolioData(() => props.data);
 
 const serif = "Georgia, 'Times New Roman', serif";
@@ -86,7 +86,15 @@ const shownProjects = computed(() => (showAll.value ? projects.value : projects.
             <section v-if="skills.length" id="skills" class="scroll-mt-6 text-center">
                 <h2 class="text-3xl" :style="{ color: t.primary, fontFamily: serif }">Skills</h2>
                 <div class="mx-auto my-4 h-px w-16" :style="{ background: t.accent }"></div>
-                <div class="flex flex-wrap justify-center gap-2">
+                <div v-if="skillGroups.length" class="space-y-5">
+                    <div v-for="g in skillGroups" :key="g.name">
+                        <h3 class="mb-2 text-xs font-semibold uppercase tracking-widest" :style="{ color: t.accent }">{{ g.name }}</h3>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            <span v-for="s in g.items" :key="s" class="rounded-full bg-white px-4 py-1.5 text-sm shadow-sm" :style="{ border: `1px solid ${edge}`, color: t.primary }">{{ s }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!skillGroups.length" class="flex flex-wrap justify-center gap-2">
                     <span v-for="s in skills" :key="s" class="rounded-full bg-white px-4 py-1.5 text-sm shadow-sm" :style="{ border: `1px solid ${edge}`, color: t.primary }">
                         {{ s }}
                     </span>

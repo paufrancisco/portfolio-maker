@@ -42,6 +42,11 @@ class SampleContent
             'github' => 'https://github.com/example',
             'linkedin' => 'https://linkedin.com/in/example',
             'skills' => ['Laravel', 'Vue 3', 'MySQL', 'Tailwind CSS', 'Git'],
+            'skill_groups' => [
+                ['name' => 'Frontend', 'items' => ['Vue 3', 'Tailwind CSS']],
+                ['name' => 'Backend', 'items' => ['Laravel', 'MySQL']],
+                ['name' => 'Tools', 'items' => ['Git']],
+            ],
             'experience' => [
                 ['position' => 'Web Development Intern', 'company' => 'Sample Tech Inc.', 'type' => 'Internship', 'start' => 'Jun 2025', 'end' => 'Aug 2025', 'description' => 'Built admin pages with Laravel and Vue and fixed bugs.'],
             ],

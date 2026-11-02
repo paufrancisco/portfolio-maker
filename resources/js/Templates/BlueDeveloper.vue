@@ -12,7 +12,7 @@ const text = '#e2e8f0';
 const muted = '#94a3b8';
 const mono = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
-const { skills, experience, projects, certifications, education, initial, links, nav, tags } =
+const { skills, skillGroups, experience, projects, certifications, education, initial, links, nav, tags } =
     usePortfolioData(() => props.data);
 
 const line = computed(() => `color-mix(in srgb, ${accent.value} 28%, transparent)`);
@@ -78,7 +78,15 @@ const shownProjects = computed(() => (showAll.value ? projects.value : projects.
             <!-- Skills -->
             <section v-if="skills.length" id="skills" class="scroll-mt-20">
                 <h2 class="mb-4 text-xl font-bold" :style="{ color: accent }">// technical_profile</h2>
-                <div class="flex flex-wrap gap-2">
+                <div v-if="skillGroups.length" class="space-y-5">
+                    <div v-for="g in skillGroups" :key="g.name">
+                        <h3 class="mb-2 text-xs" :style="{ color: muted }"># {{ g.name.toLowerCase() }}</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span v-for="s in g.items" :key="s" class="rounded border px-3 py-1 text-xs" :style="{ borderColor: line, background: glow, color: accent }">[ {{ s }} ]</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!skillGroups.length" class="flex flex-wrap gap-2">
                     <span v-for="s in skills" :key="s" class="rounded border px-3 py-1 text-xs" :style="{ borderColor: line, background: glow, color: accent }">
                         [ {{ s }} ]
                     </span>

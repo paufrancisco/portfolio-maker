@@ -72,7 +72,10 @@ const profile = {
     headline: d.headline ?? '',
     intro: d.intro ?? '',
     about: d.about ?? '',
-    skills: Array.isArray(d.skills) ? d.skills.join(', ') : (d.skills ?? ''),
+    skills:
+        Array.isArray(d.skill_groups) && d.skill_groups.length
+            ? d.skill_groups.map((g) => `${g.name}: ${g.items.join(', ')}`).join('\n')
+            : Array.isArray(d.skills) ? d.skills.join(', ') : (d.skills ?? ''),
     linkedin: d.linkedin ?? '',
     github: d.github ?? '',
     website: d.website ?? '',
@@ -253,8 +256,9 @@ const area =
                             <InputError :message="form.errors['profile.about']" class="mt-2" />
                         </div>
                         <div>
-                            <InputLabel for="skills" value="Skills (comma separated)" />
-                            <textarea id="skills" v-model="form.profile.skills" rows="2" :class="area" placeholder="Laravel, Vue.js, Python, Git"></textarea>
+                            <InputLabel for="skills" value="Skills" />
+                            <textarea id="skills" v-model="form.profile.skills" rows="4" :class="area" placeholder="Laravel, Vue.js, Python, Git"></textarea>
+                            <p class="mt-1 text-xs text-gray-500">Separate skills with commas. Optional: put each group on its own line, like "Frontend: Vue, React" and "Backend: Laravel, MySQL".</p>
                             <InputError :message="form.errors['profile.skills']" class="mt-2" />
                         </div>
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">

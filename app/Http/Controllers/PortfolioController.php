@@ -210,13 +210,44 @@ class PortfolioController extends Controller
         return $rules;
     }
 
+    // "Frontend: Vue, React" lines become groups; a plain comma list stays flat (old format).
+    // Returns [flat list of all skills, list of groups].
+    private function parseSkills(string $text): array
+    {
+        $split = fn (string $v) => array_values(array_filter(array_map('trim', explode(',', $v)), fn ($x) => $x !== ''));
+        $flat = [];
+        $groups = [];
+        $loose = [];
+
+        foreach (preg_split('/\R/', $text) as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+
+            if (preg_match('/^([^:,]{1,40}):(.+)$/', $line, $m) && $split($m[2])) {
+                $items = $split($m[2]);
+                $groups[] = ['name' => trim($m[1]), 'items' => $items];
+                $flat = array_merge($flat, $items);
+            } else {
+                $items = $split($line);
+                $loose = array_merge($loose, $items);
+                $flat = array_merge($flat, $items);
+            }
+        }
+
+        if ($groups && $loose) {
+            $groups[] = ['name' => 'Other', 'items' => $loose];
+        }
+
+        return [array_values(array_unique($flat)), array_slice($groups, 0, 8)];
+    }
+
     private function buildData(Portfolio $portfolio, array $profile): array
     {
         $profile['show_resume'] = (bool) ($profile['show_resume'] ?? false);
 
-        $profile['skills'] = array_values(array_filter(
-            array_map('trim', explode(',', $profile['skills'] ?? ''))
-        ));
+        [$profile['skills'], $profile['skill_groups']] = $this->parseSkills($profile['skills'] ?? '');
 
         foreach (self::SECTION_FIELDS as $section => $fields) {
             $rows = [];

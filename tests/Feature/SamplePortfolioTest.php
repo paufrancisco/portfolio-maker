@@ -21,6 +21,7 @@ class SamplePortfolioTest extends TestCase
                 ->component('Portfolios/Preview')
                 ->where('portfolio.template_key', $key)
                 ->where('portfolio.data.name', 'Maria Santos')
+                ->has('portfolio.data.skill_groups', 3)
                 ->where('watermark', false)
                 ->where('templates', null));
         }

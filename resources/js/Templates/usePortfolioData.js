@@ -11,6 +11,11 @@ export function usePortfolioData(getData) {
             .filter(Boolean);
     });
 
+    // Optional groups like Frontend / Backend; empty when the customer used a plain list
+    const skillGroups = computed(() =>
+        list(getData().skill_groups).filter((g) => g && g.name && Array.isArray(g.items) && g.items.length),
+    );
+
     const experience = computed(() => list(getData().experience));
     const projects = computed(() => list(getData().projects));
     const certifications = computed(() => list(getData().certifications));
@@ -46,5 +51,5 @@ export function usePortfolioData(getData) {
                   .map((x) => x.trim())
                   .filter(Boolean);
 
-    return { skills, experience, projects, certifications, education, initial, links, nav, tags };
+    return { skills, skillGroups, experience, projects, certifications, education, initial, links, nav, tags };
 }

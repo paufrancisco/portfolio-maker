@@ -14,7 +14,7 @@ const t = computed(() => ({
 const soft = computed(() => `color-mix(in srgb, ${t.value.accent} 14%, transparent)`);
 const line = computed(() => `color-mix(in srgb, ${t.value.accent} 30%, transparent)`);
 
-const { skills, experience, projects, certifications, education, initial, links, nav, tags } =
+const { skills, skillGroups, experience, projects, certifications, education, initial, links, nav, tags } =
     usePortfolioData(() => props.data);
 </script>
 
@@ -51,7 +51,15 @@ const { skills, experience, projects, certifications, education, initial, links,
 
             <section v-if="skills.length" id="skills" class="scroll-mt-20">
                 <h2 class="mb-4 text-3xl font-extrabold">Skills</h2>
-                <div class="flex flex-wrap gap-3">
+                <div v-if="skillGroups.length" class="space-y-6">
+                    <div v-for="g in skillGroups" :key="g.name">
+                        <h3 class="mb-2 text-sm font-bold uppercase tracking-widest opacity-60">{{ g.name }}</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <span v-for="s in g.items" :key="s" class="rounded-full px-5 py-2 text-sm font-semibold" :style="{ background: soft, color: t.accent }">{{ s }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!skillGroups.length" class="flex flex-wrap gap-3">
                     <span v-for="s in skills" :key="s" class="rounded-full px-5 py-2 text-sm font-semibold" :style="{ background: soft, color: t.accent }">{{ s }}</span>
                 </div>
             </section>

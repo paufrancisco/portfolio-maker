@@ -14,7 +14,7 @@ const t = computed(() => ({
 const soft = computed(() => `color-mix(in srgb, ${t.value.accent} 14%, transparent)`);
 const line = computed(() => `color-mix(in srgb, ${t.value.accent} 30%, transparent)`);
 
-const { skills, experience, projects, certifications, education, initial, links, nav, tags } =
+const { skills, skillGroups, experience, projects, certifications, education, initial, links, nav, tags } =
     usePortfolioData(() => props.data);
 </script>
 
@@ -38,7 +38,10 @@ const { skills, experience, projects, certifications, education, initial, links,
 
             <section v-if="skills.length" id="skills" class="mt-10 scroll-mt-8 border-t pt-6" :style="{ borderColor: line }">
                 <h2 class="mb-3 text-xs font-semibold uppercase tracking-widest" :style="{ color: t.accent }">Skills</h2>
-                <p class="opacity-90">{{ skills.join(' · ') }}</p>
+                <div v-if="skillGroups.length" class="space-y-1">
+                    <p v-for="g in skillGroups" :key="g.name" class="opacity-90"><span class="font-medium">{{ g.name }}:</span> {{ g.items.join(' · ') }}</p>
+                </div>
+                <p v-if="!skillGroups.length" class="opacity-90">{{ skills.join(' · ') }}</p>
             </section>
 
             <section v-if="experience.length" id="work" class="mt-10 scroll-mt-8 border-t pt-6" :style="{ borderColor: line }">

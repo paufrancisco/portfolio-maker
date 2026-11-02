@@ -27,6 +27,7 @@ const skills = computed(() => {
         .filter(Boolean);
 });
 
+const skillGroups = computed(() => list(props.data.skill_groups).filter((g) => g && g.name && Array.isArray(g.items) && g.items.length));
 const experience = computed(() => list(props.data.experience));
 const projects = computed(() => list(props.data.projects));
 const certifications = computed(() => list(props.data.certifications));
@@ -126,7 +127,15 @@ const nav = computed(() =>
             <!-- Skills -->
             <section v-if="skills.length" id="skills" class="scroll-mt-20">
                 <h2 class="mb-4 text-2xl font-bold">Technical Profile</h2>
-                <div class="flex flex-wrap gap-2">
+                <div v-if="skillGroups.length" class="space-y-5">
+                    <div v-for="g in skillGroups" :key="g.name">
+                        <h3 class="mb-2 text-sm font-semibold opacity-70">{{ g.name }}</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span v-for="s in g.items" :key="s" class="rounded-full px-3 py-1 text-sm" :style="{ background: soft, color: t.accent }">{{ s }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!skillGroups.length" class="flex flex-wrap gap-2">
                     <span v-for="skill in skills" :key="skill" class="rounded-full px-3 py-1 text-sm" :style="{ background: soft, color: t.accent }">
                         {{ skill }}
                     </span>
