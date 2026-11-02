@@ -6,7 +6,8 @@ defineProps({
     canRegister: Boolean,
 });
 
-const thesisForm = useForm({ email: '' });
+const thesisForm = useForm({ email: '', type: 'thesis_build' });
+const tutorForm = useForm({ email: '', type: 'math_tutor' });
 const portfolioForm = useForm({ email: '', mode: 'upload' });
 const resumeForm = useForm({ email: '' });
 
@@ -22,7 +23,8 @@ const resumeTemplates = [
     { key: 'minimal', name: 'Minimal', desc: 'Simple and ATS-friendly.', swatch: 'bg-emerald-600' },
 ];
 
-const submitThesis = () => thesisForm.post('/thesis');
+const submitThesis = () => thesisForm.get('/services/request');
+const submitTutor = () => tutorForm.get('/services/request');
 const submitPortfolio = () => portfolioForm.post('/start');
 const submitResume = () => resumeForm.post('/resume');
 </script>
@@ -44,14 +46,18 @@ const submitResume = () => resumeForm.post('/resume');
                 <p class="mt-3 text-gray-600">Pick a service and enter your email. No account needed.</p>
             </section>
 
-            <section class="grid gap-6 md:grid-cols-3">
+            <section class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Thesis consultation -->
                 <div class="flex flex-col rounded-xl border bg-white p-6 shadow-sm">
                     <h2 class="text-xl font-semibold">Thesis Consultation</h2>
                     <p class="mt-2 flex-1 text-sm text-gray-600">
-                        Propose a system you want built, or ask for help debugging your existing project.
+                        Propose a system you want built, or ask for help debugging your existing project. Price is quoted after review.
                     </p>
                     <form class="mt-5 space-y-3" @submit.prevent="submitThesis">
+                        <select v-model="thesisForm.type" class="w-full rounded-lg border-gray-300 text-sm">
+                            <option value="thesis_build">Build a system</option>
+                            <option value="thesis_debug">Debug my project</option>
+                        </select>
                         <input
                             v-model="thesisForm.email"
                             type="email"
@@ -59,13 +65,40 @@ const submitResume = () => resumeForm.post('/resume');
                             placeholder="you@example.com"
                             class="w-full rounded-lg border-gray-300 text-sm"
                         />
-                        <p v-if="thesisForm.errors.email" class="text-xs text-red-600">{{ thesisForm.errors.email }}</p>
                         <button
                             type="submit"
                             :disabled="thesisForm.processing"
                             class="w-full rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
                         >
                             Request consultation
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Tutoring -->
+                <div class="flex flex-col rounded-xl border bg-white p-6 shadow-sm">
+                    <h2 class="text-xl font-semibold">Tutoring</h2>
+                    <p class="mt-2 flex-1 text-sm text-gray-600">
+                        Send your Math or Programming problem and get a screen-recorded walkthrough with voice-over. Price is quoted after review.
+                    </p>
+                    <form class="mt-5 space-y-3" @submit.prevent="submitTutor">
+                        <select v-model="tutorForm.type" class="w-full rounded-lg border-gray-300 text-sm">
+                            <option value="math_tutor">Math</option>
+                            <option value="programming_tutor">Programming</option>
+                        </select>
+                        <input
+                            v-model="tutorForm.email"
+                            type="email"
+                            required
+                            placeholder="you@example.com"
+                            class="w-full rounded-lg border-gray-300 text-sm"
+                        />
+                        <button
+                            type="submit"
+                            :disabled="tutorForm.processing"
+                            class="w-full rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+                        >
+                            Send my problem
                         </button>
                     </form>
                 </div>
