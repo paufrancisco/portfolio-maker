@@ -40,6 +40,36 @@ class TemplateSeeder extends Seeder
                     'font' => 'Poppins, sans-serif',
                 ],
             ],
+            [
+                'key' => 'showcase',
+                'name' => 'Showcase',
+                'theme_options' => [
+                    'primary' => '#111827',
+                    'accent' => '#f97316',
+                    'background' => '#fffbeb',
+                    'font' => 'Poppins, sans-serif',
+                ],
+            ],
+            [
+                'key' => 'minimal',
+                'name' => 'Minimal',
+                'theme_options' => [
+                    'primary' => '#1f2937',
+                    'accent' => '#059669',
+                    'background' => '#ffffff',
+                    'font' => 'Inter, sans-serif',
+                ],
+            ],
+            [
+                'key' => 'editorial',
+                'name' => 'Editorial',
+                'theme_options' => [
+                    'primary' => '#292524',
+                    'accent' => '#9a3412',
+                    'background' => '#faf7f2',
+                    'font' => 'Georgia, serif',
+                ],
+            ],
         ];
 
         foreach ($templates as $template) {

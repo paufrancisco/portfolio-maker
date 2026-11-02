@@ -4,6 +4,9 @@ import { computed, ref } from 'vue';
 import Professional from '@/Templates/Professional.vue';
 import PinkElegance from '@/Templates/PinkElegance.vue';
 import BlueDeveloper from '@/Templates/BlueDeveloper.vue';
+import ShowcaseBold from '@/Templates/ShowcaseBold.vue';
+import MinimalClean from '@/Templates/MinimalClean.vue';
+import EditorialSerif from '@/Templates/EditorialSerif.vue';
 
 const props = defineProps({
     portfolio: Object,
@@ -16,6 +19,9 @@ const components = {
     professional: Professional,
     pink: PinkElegance,
     blue: BlueDeveloper,
+    showcase: ShowcaseBold,
+    minimal: MinimalClean,
+    editorial: EditorialSerif,
 };
 
 const current = computed(() => components[props.portfolio.template_key] ?? Professional);

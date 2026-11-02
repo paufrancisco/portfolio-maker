@@ -45,7 +45,7 @@ Route::get('/samples/portfolio/{key}', function (string $key) {
         'watermark' => false,
         'templates' => null,
     ]);
-})->whereIn('key', ['professional', 'pink', 'blue']);
+})->whereIn('key', ['professional', 'pink', 'blue', 'showcase', 'minimal', 'editorial']);
 
 Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
     $portfolios = \App\Models\Portfolio::where('user_id', $request->user()->id)

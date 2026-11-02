@@ -28,6 +28,9 @@ const portfolioTemplates = [
     { key: 'professional', name: 'Professional', desc: 'Clean and corporate.', swatch: 'bg-gray-800' },
     { key: 'pink', name: 'Pink Elegance', desc: 'Soft and stylish.', swatch: 'bg-pink-500' },
     { key: 'blue', name: 'Blue Developer', desc: 'Built for developers.', swatch: 'bg-blue-600' },
+    { key: 'showcase', name: 'Showcase', desc: 'Big photo, bold projects.', swatch: 'bg-orange-500' },
+    { key: 'minimal', name: 'Minimal', desc: 'One quiet column.', swatch: 'bg-emerald-600' },
+    { key: 'editorial', name: 'Editorial', desc: 'Serif, magazine style.', swatch: 'bg-amber-800' },
 ];
 
 const resumeTemplates = [
