@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 
 defineProps({
     portfolios: Array,
@@ -13,6 +13,12 @@ const labels = {
     published: ['Published', '#166534', '#dcfce7'],
 };
 const badge = (status) => labels[status] ?? [status, '#374151', '#e5e7eb'];
+
+const requestUpdate = (p) => {
+    if (confirm('Send your latest changes to be reviewed and published?')) {
+        router.post(route('portfolios.request-update', p.id), {}, { preserveScroll: true });
+    }
+};
 
 const btn = 'rounded-md border px-3 py-1.5 text-sm font-medium';
 </script>
@@ -86,6 +92,18 @@ const btn = 'rounded-md border px-3 py-1.5 text-sm font-medium';
                         >
                             Payment
                         </Link>
+                        <button
+                            v-if="p.has_unpublished_changes && !p.update_requested"
+                            type="button"
+                            class="rounded-md px-3 py-1.5 text-sm font-medium"
+                            style="background-color: #ea580c; color: #ffffff;"
+                            @click="requestUpdate(p)"
+                        >
+                            Request update
+                        </button>
+                        <span v-if="p.update_requested" class="rounded-md px-3 py-1.5 text-sm" style="color: #92400e; background-color: #fef3c7;">
+                            Update pending review
+                        </span>
                         <a
                             v-if="p.status === 'published' && p.slug"
                             :href="route('portfolios.public', p.slug)"

@@ -130,6 +130,16 @@ class PortfolioController extends Controller
         return response()->json(['url' => Storage::disk('images')->url($path)]);
     }
 
+    public function requestUpdate(Request $request, Portfolio $portfolio): RedirectResponse
+    {
+        abort_unless($portfolio->user_id === $request->user()->id, 403);
+        abort_unless($portfolio->status === 'published', 422);
+
+        $portfolio->update(['update_requested_at' => now()]);
+
+        return back()->with('status', 'Update requested. We will review and publish your changes.');
+    }
+
     private const SECTION_FIELDS = [
         'experience' => ['company', 'position', 'type', 'start', 'end', 'description'],
         'projects' => ['title', 'role', 'description', 'technologies', 'repo_url', 'demo_url', 'image_url'],

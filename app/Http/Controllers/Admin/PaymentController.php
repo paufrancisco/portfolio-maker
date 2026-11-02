@@ -33,8 +33,22 @@ class PaymentController extends Controller
                 'proof_url' => $this->proofUrl($payment->proof_path),
             ]);
 
+        $updates = Portfolio::with('user')
+            ->where('status', 'published')
+            ->whereNotNull('update_requested_at')
+            ->latest('update_requested_at')
+            ->get()
+            ->map(fn (Portfolio $p) => [
+                'id' => $p->id,
+                'name' => $p->data['name'] ?? $p->user->name,
+                'client_email' => $p->user->email,
+                'requested_at' => $p->update_requested_at->toDayDateTimeString(),
+                'preview_url' => route('admin.portfolios.preview', $p->id),
+            ]);
+
         return Inertia::render('Admin/Payments/Index', [
             'payments' => $payments,
+            'updates' => $updates,
         ]);
     }
 
@@ -66,6 +80,47 @@ class PaymentController extends Controller
         }
 
         return redirect()->route('admin.payments.index');
+    }
+
+    public function publishUpdate(Portfolio $portfolio): RedirectResponse
+    {
+        abort_unless($portfolio->status === 'published', 422);
+
+        $portfolio->update([
+            'published_data' => $portfolio->data,
+            'published_at' => now(),
+            'update_requested_at' => null,
+        ]);
+
+        $url = route('portfolios.public', $portfolio->slug);
+
+        try {
+            Mail::raw(
+                "Your portfolio changes are now live:\n\n{$url}\n\nThank you!",
+                fn ($message) => $message->to($portfolio->user->email)->subject('Your portfolio was updated')
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return redirect()->route('admin.payments.index');
+    }
+
+    public function previewDraft(Portfolio $portfolio): Response
+    {
+        $template = \App\Models\Template::where('key', $portfolio->template_key)->first()
+            ?? \App\Models\Template::where('key', 'professional')->first();
+
+        return Inertia::render('Portfolios/Preview', [
+            'portfolio' => [
+                'id' => $portfolio->id,
+                'template_key' => $portfolio->template_key,
+                'status' => $portfolio->status,
+                'data' => $portfolio->data ?? [],
+            ],
+            'theme' => $template?->theme_options ?? [],
+            'watermark' => true,
+        ]);
     }
 
     public function reject(Request $request, Payment $payment): RedirectResponse

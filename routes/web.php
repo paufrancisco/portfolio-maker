@@ -25,6 +25,7 @@ Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
             'template_key' => $p->template_key,
             'status' => $p->status,
             'slug' => $p->slug,
+            'update_requested' => (bool) $p->update_requested_at,
             'has_unpublished_changes' => $p->status === 'published'
                 && isset($p->published_data)
                 && $p->published_data != $p->data,
@@ -54,9 +55,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('admin.payments.index');
         Route::post('/payments/{payment}/approve', [\App\Http\Controllers\Admin\PaymentController::class, 'approve'])->name('admin.payments.approve');
         Route::post('/payments/{payment}/reject', [\App\Http\Controllers\Admin\PaymentController::class, 'reject'])->name('admin.payments.reject');
+        Route::post('/portfolios/{portfolio}/publish-update', [\App\Http\Controllers\Admin\PaymentController::class, 'publishUpdate'])->name('admin.portfolios.publish-update');
+        Route::get('/portfolios/{portfolio}/preview', [\App\Http\Controllers\Admin\PaymentController::class, 'previewDraft'])->name('admin.portfolios.preview');
     });
     Route::put('/portfolios/{portfolio}', [\App\Http\Controllers\PortfolioController::class, 'update'])->name('portfolios.update');
     Route::post('/portfolios/{portfolio}/images', [\App\Http\Controllers\PortfolioController::class, 'uploadImage'])->middleware('throttle:30,1')->name('portfolios.images');
+    Route::post('/portfolios/{portfolio}/request-update', [\App\Http\Controllers\PortfolioController::class, 'requestUpdate'])->middleware('throttle:10,1')->name('portfolios.request-update');
 });
 
 require __DIR__.'/auth.php';
