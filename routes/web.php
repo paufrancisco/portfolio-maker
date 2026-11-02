@@ -23,6 +23,30 @@ Route::get('/', function () {
     ]);
 });
 
+// Public sample resumes for the home page previews (fake data only)
+Route::get('/samples/resume/{key}', function (string $key) {
+    return response()->view('resumes.'.$key, [
+        'title' => 'Sample resume',
+        'd' => array_replace_recursive(\App\Models\Resume::blankData(), \App\Support\SampleContent::resume()),
+    ]);
+})->whereIn('key', ['classic', 'modern', 'minimal']);
+
+// Public sample portfolios for the home page previews (fake data only)
+Route::get('/samples/portfolio/{key}', function (string $key) {
+    return Inertia::render('Portfolios/Preview', [
+        'portfolio' => [
+            'id' => 0,
+            'template_key' => $key,
+            'saved_template_key' => $key,
+            'status' => 'published',
+            'data' => \App\Support\SampleContent::portfolio(),
+        ],
+        'theme' => \App\Support\SampleContent::theme($key),
+        'watermark' => false,
+        'templates' => null,
+    ]);
+})->whereIn('key', ['professional', 'pink', 'blue']);
+
 Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
     $portfolios = \App\Models\Portfolio::where('user_id', $request->user()->id)
         ->latest('id')

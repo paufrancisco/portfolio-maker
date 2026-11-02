@@ -1,4 +1,5 @@
 <script setup>
+import SamplePreview from '@/Components/SamplePreview.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 
 defineProps({
@@ -237,7 +238,7 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                         :key="t.key"
                         class="overflow-hidden rounded-2xl border bg-white shadow-sm"
                     >
-                        <div :class="[t.swatch, 'h-28']"></div>
+                        <SamplePreview :src="`/samples/portfolio/${t.key}`" :label="t.name" :design-width="1200" height-class="h-48" />
                         <div class="p-4">
                             <h4 class="font-medium">{{ t.name }}</h4>
                             <p class="mt-1 text-xs text-gray-500">{{ t.desc }}</p>
@@ -252,7 +253,7 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                         :key="t.key"
                         class="overflow-hidden rounded-2xl border bg-white shadow-sm"
                     >
-                        <div :class="[t.swatch, 'h-28']"></div>
+                        <SamplePreview :src="`/samples/resume/${t.key}`" :label="t.name" :design-width="820" height-class="h-64" />
                         <div class="p-4">
                             <h4 class="font-medium">{{ t.name }}</h4>
                             <p class="mt-1 text-xs text-gray-500">{{ t.desc }}</p>
