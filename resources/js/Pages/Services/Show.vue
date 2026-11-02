@@ -1,9 +1,14 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     serviceRequest: Object,
+    token: String,
 });
+
+const reviewForm = useForm({ name: '', rating: 5, comment: '' });
+
+const submitReview = () => reviewForm.post(`${window.location.pathname}/review`);
 </script>
 
 <template>
@@ -50,6 +55,60 @@ defineProps({
                 <h2 class="text-sm font-medium">Your request</h2>
                 <p class="mt-2 whitespace-pre-line text-sm text-gray-700">{{ serviceRequest.details }}</p>
             </div>
+
+            <!-- Review: only after delivery -->
+            <div v-if="serviceRequest.review" class="mt-6 rounded-xl border bg-white p-6 shadow-sm">
+                <h2 class="text-sm font-medium">Your review</h2>
+                <p class="mt-2 text-amber-500">
+                    {{ '★'.repeat(serviceRequest.review.rating) }}{{ '☆'.repeat(5 - serviceRequest.review.rating) }}
+                </p>
+                <p class="mt-1 whitespace-pre-line text-sm text-gray-700">{{ serviceRequest.review.comment }}</p>
+                <p v-if="serviceRequest.review.status === 'pending'" class="mt-3 text-xs text-gray-500">
+                    Thank you! Your review will appear on the home page once it is approved.
+                </p>
+            </div>
+
+            <form
+                v-else-if="serviceRequest.can_review"
+                class="mt-6 space-y-4 rounded-xl border bg-white p-6 shadow-sm"
+                @submit.prevent="submitReview"
+            >
+                <h2 class="text-sm font-medium">How was your experience?</h2>
+
+                <div class="flex gap-1">
+                    <button
+                        v-for="n in 5"
+                        :key="n"
+                        type="button"
+                        :class="[n <= reviewForm.rating ? 'text-amber-500' : 'text-gray-300', 'text-3xl leading-none']"
+                        @click="reviewForm.rating = n"
+                    >
+                        ★
+                    </button>
+                </div>
+                <p v-if="reviewForm.errors.rating" class="text-xs text-red-600">{{ reviewForm.errors.rating }}</p>
+
+                <div>
+                    <label class="block text-sm font-medium">Name to show</label>
+                    <input v-model="reviewForm.name" type="text" required maxlength="60" class="mt-1 w-full rounded-lg border-gray-300 text-sm" />
+                    <p class="mt-1 text-xs text-gray-500">Your email is never shown.</p>
+                    <p v-if="reviewForm.errors.name" class="mt-1 text-xs text-red-600">{{ reviewForm.errors.name }}</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Your review</label>
+                    <textarea v-model="reviewForm.comment" rows="4" required class="mt-1 w-full rounded-lg border-gray-300 text-sm"></textarea>
+                    <p v-if="reviewForm.errors.comment" class="mt-1 text-xs text-red-600">{{ reviewForm.errors.comment }}</p>
+                </div>
+
+                <button
+                    type="submit"
+                    :disabled="reviewForm.processing"
+                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+                >
+                    Submit review
+                </button>
+            </form>
 
             <p class="mt-6 text-xs text-gray-500">Keep this page's link private. Anyone with it can view your request.</p>
         </main>

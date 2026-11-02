@@ -77,6 +77,8 @@ class ServiceRequestController extends Controller
     {
         $serviceRequest = ServiceRequest::where('token', $token)->firstOrFail();
 
+        $review = \App\Models\Review::where('service_request_id', $serviceRequest->id)->first();
+
         return Inertia::render('Services/Show', [
             'serviceRequest' => [
                 'type_label' => $serviceRequest->typeLabel(),
@@ -87,6 +89,8 @@ class ServiceRequestController extends Controller
                 'quote_note' => $serviceRequest->quote_note,
                 'delivery_url' => $serviceRequest->status === 'delivered' ? $serviceRequest->delivery_url : null,
                 'created_at' => $serviceRequest->created_at->toDayDateTimeString(),
+                'can_review' => $serviceRequest->status === 'delivered' && ! $review,
+                'review' => $review ? ['rating' => $review->rating, 'comment' => $review->comment, 'status' => $review->status] : null,
             ],
         ]);
     }

@@ -6,11 +6,19 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+    $hasReviews = \Illuminate\Support\Facades\Schema::hasTable('reviews');
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'reviews' => ! $hasReviews ? [] : \App\Models\Review::with('serviceRequest')->where('status', 'approved')->latest('id')->take(12)->get()
+            ->map(fn ($r) => ['name' => $r->name, 'rating' => $r->rating, 'comment' => $r->comment, 'service' => $r->serviceRequest->typeLabel()])->values(),
+        'reviewStats' => [
+            'count' => $hasReviews ? \App\Models\Review::where('status', 'approved')->count() : 0,
+            'average' => $hasReviews ? round((float) \App\Models\Review::where('status', 'approved')->avg('rating'), 1) : 0,
+        ],
     ]);
 });
 
@@ -58,6 +66,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/payments/{payment}/reject', [\App\Http\Controllers\Admin\PaymentController::class, 'reject'])->name('admin.payments.reject');
         Route::post('/portfolios/{portfolio}/publish-update', [\App\Http\Controllers\Admin\PaymentController::class, 'publishUpdate'])->name('admin.portfolios.publish-update');
         Route::get('/portfolios/{portfolio}/preview', [\App\Http\Controllers\Admin\PaymentController::class, 'previewDraft'])->name('admin.portfolios.preview');
+        Route::get('/reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('admin.reviews.index');
+        Route::post('/reviews/{review}/approve', [\App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('admin.reviews.approve');
+        Route::post('/reviews/{review}/hide', [\App\Http\Controllers\Admin\ReviewController::class, 'hide'])->name('admin.reviews.hide');
     });
     Route::put('/portfolios/{portfolio}', [\App\Http\Controllers\PortfolioController::class, 'update'])->name('portfolios.update');
     Route::post('/portfolios/{portfolio}/images', [\App\Http\Controllers\PortfolioController::class, 'uploadImage'])->middleware('throttle:30,1')->name('portfolios.images');
@@ -69,6 +80,7 @@ require __DIR__.'/auth.php';
 
 Route::get('/services/request', [\App\Http\Controllers\ServiceRequestController::class, 'create'])->name('services.create');
 Route::post('/services/request', [\App\Http\Controllers\ServiceRequestController::class, 'store'])->middleware('throttle:5,1')->name('services.store');
+Route::post('/services/{token}/review', [\App\Http\Controllers\ReviewController::class, 'store'])->middleware('throttle:5,1')->name('services.review');
 Route::get('/services/{token}', [\App\Http\Controllers\ServiceRequestController::class, 'show'])->middleware('throttle:60,1')->name('services.show');
 
 Route::get('/p/{slug}', [\App\Http\Controllers\PublicPortfolioController::class, 'show'])->name('portfolios.public');

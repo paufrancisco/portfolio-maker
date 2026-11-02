@@ -4,6 +4,8 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 defineProps({
     canLogin: Boolean,
     canRegister: Boolean,
+    reviews: { type: Array, default: () => [] },
+    reviewStats: { type: Object, default: () => ({ count: 0, average: 0 }) },
 });
 
 const thesisForm = useForm({ email: '', type: 'thesis_build' });
@@ -198,6 +200,25 @@ const submitResume = () => resumeForm.post('/resume');
                             <h3 class="font-medium">{{ t.name }}</h3>
                             <p class="mt-1 text-xs text-gray-500">{{ t.desc }}</p>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <section v-if="reviews.length" class="mt-14">
+                <h2 class="text-center text-xl font-semibold">Customer reviews</h2>
+                <p class="mt-1 text-center text-sm text-gray-600">
+                    <span class="text-amber-500">★</span> {{ reviewStats.average }} from {{ reviewStats.count }} verified
+                    {{ reviewStats.count === 1 ? 'client' : 'clients' }}
+                </p>
+                <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div v-for="(r, i) in reviews" :key="i" class="rounded-xl border bg-white p-5 shadow-sm">
+                        <p class="text-amber-500">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</p>
+                        <p class="mt-2 whitespace-pre-line text-sm text-gray-700">{{ r.comment }}</p>
+                        <div class="mt-4 flex items-center justify-between text-xs">
+                            <span class="font-medium">{{ r.name }}</span>
+                            <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">Verified client</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-400">{{ r.service }}</p>
                     </div>
                 </div>
             </section>
