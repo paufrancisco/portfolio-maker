@@ -56,7 +56,11 @@ class DashboardController extends Controller
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
-                'customers' => User::where('is_admin', false)->count(),
+                'customers' => \Illuminate\Support\Facades\DB::table('service_requests')->select('email')
+                    ->union(\Illuminate\Support\Facades\DB::table('users')->where('is_admin', false)->select('email'))
+                    ->count(),
+                'pending_requests' => \App\Models\ServiceRequest::whereIn('status', ['received', 'payment_submitted'])->count(),
+                'pending_reviews' => \App\Models\Review::where('status', 'pending')->count(),
                 'portfolios' => Portfolio::count(),
                 'published' => Portfolio::where('status', 'published')->count(),
                 'pending' => Payment::where('status', 'pending')->count(),

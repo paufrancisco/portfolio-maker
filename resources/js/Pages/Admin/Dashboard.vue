@@ -18,7 +18,7 @@ const runSearch = () => {
 const peso = (n) => 'PHP ' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
 const cards = [
-    ['Customers', 'customers'],
+    ['Unique clients', 'customers'],
     ['Portfolios', 'portfolios'],
     ['Published', 'published'],
     ['Pending payments', 'pending'],
@@ -53,6 +53,20 @@ const badge = (s) => statusStyle[s] ?? [s, '#374151', '#e5e7eb'];
                         style="background-color: #16a34a; color: #ffffff;"
                     >
                         Review pending payments &amp; updates
+                    </Link>
+                    <Link
+                        :href="route('admin.requests.index')"
+                        class="rounded-md px-4 py-2 text-sm font-medium"
+                        style="background-color: #2563eb; color: #ffffff;"
+                    >
+                        Requests ({{ stats.pending_requests }} waiting)
+                    </Link>
+                    <Link
+                        :href="route('admin.reviews.index')"
+                        class="rounded-md px-4 py-2 text-sm font-medium"
+                        style="background-color: #7c3aed; color: #ffffff;"
+                    >
+                        Reviews ({{ stats.pending_reviews }} pending)
                     </Link>
                 </div>
 

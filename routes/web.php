@@ -67,6 +67,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/portfolios/{portfolio}/publish-update', [\App\Http\Controllers\Admin\PaymentController::class, 'publishUpdate'])->name('admin.portfolios.publish-update');
         Route::get('/portfolios/{portfolio}/preview', [\App\Http\Controllers\Admin\PaymentController::class, 'previewDraft'])->name('admin.portfolios.preview');
         Route::get('/reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('admin.reviews.index');
+        Route::get('/requests', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'index'])->name('admin.requests.index');
+        Route::get('/requests/{serviceRequest}', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'show'])->name('admin.requests.show');
+        Route::post('/requests/{serviceRequest}/quote', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'quote'])->name('admin.requests.quote');
+        Route::post('/requests/{serviceRequest}/paid', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'markPaid'])->name('admin.requests.paid');
+        Route::post('/requests/{serviceRequest}/deliver', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'deliver'])->name('admin.requests.deliver');
+        Route::post('/requests/{serviceRequest}/reject', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'reject'])->name('admin.requests.reject');
         Route::post('/reviews/{review}/approve', [\App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('admin.reviews.approve');
         Route::post('/reviews/{review}/hide', [\App\Http\Controllers\Admin\ReviewController::class, 'hide'])->name('admin.reviews.hide');
     });
