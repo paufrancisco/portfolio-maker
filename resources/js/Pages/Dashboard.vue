@@ -43,11 +43,11 @@ const btn = 'rounded-md border px-3 py-1.5 text-sm font-medium';
                     </Link>
                     <Link
                         v-if="isAdmin"
-                        :href="route('admin.payments.index')"
+                        :href="route('admin.dashboard')"
                         class="rounded-md px-4 py-2 text-sm font-medium"
                         style="background-color: #111827; color: #ffffff;"
                     >
-                        Admin: Payments
+                        Admin dashboard
                     </Link>
                 </div>
 
