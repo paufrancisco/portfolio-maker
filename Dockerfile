@@ -1,4 +1,4 @@
-# ---------- Stage 1: PHP dependencies (kailangan ng Ziggy sa Vite build) ----------
+# ---------- Stage 1: PHP dependencies (Ziggy is needed for the Vite build) ----------
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./

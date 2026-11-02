@@ -145,7 +145,7 @@ const area =
         <div class="py-12">
             <div class="mx-auto max-w-3xl space-y-6 sm:px-6 lg:px-8">
                 <div v-if="portfolio.data?.imported_from_resume" class="rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800">
-                    Kinuha namin ang impormasyong ito mula sa resume mo. Hindi ito laging tama, kaya paki-review at itama ang bawat section bago mag-save.
+                    We extracted this information from your resume. It may not always be accurate, so please review and correct each section before saving.
                 </div>
 
                 <form @submit.prevent="submit" class="space-y-8 rounded-lg bg-white p-6 shadow-sm">
@@ -184,8 +184,8 @@ const area =
                         <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3 text-sm text-gray-700">
                             <input type="checkbox" v-model="form.profile.show_resume" class="mt-0.5 rounded border-gray-300 text-indigo-600" />
                             <span>
-                                Ipakita ang <strong>Download Resume</strong> button sa portfolio ko.
-                                <span class="block text-xs text-gray-500">Ang naka-upload mong resume ang ida-download ng bisita. Makikita ang email at phone number na nasa resume mo.</span>
+                                Show a <strong>Download Resume</strong> button on my portfolio.
+                                <span class="block text-xs text-gray-500">Visitors will download the resume you uploaded. Any email address and phone number in it will be visible.</span>
                             </span>
                         </label>
                         <div>
@@ -254,7 +254,7 @@ const area =
                         </div>
 
                         <p v-if="!form.profile[s.key].length" class="text-sm text-gray-500">
-                            Wala pang entry. Hindi ito lalabas sa portfolio hangga't walang laman.
+                            No entries yet. This section will not appear on your portfolio until you add one.
                         </p>
 
                         <div v-for="(row, i) in form.profile[s.key]" :key="i" class="space-y-3 rounded-lg border border-gray-200 p-4">

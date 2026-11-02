@@ -239,7 +239,7 @@ class ResumeParser
             }
         }
 
-        // Entry na walang petsa: nagsisimula ito pagkatapos ng "Skills:" line
+        // Entries without dates: a new entry starts right after a "Skills:" line
         foreach ($lines as $i => $line) {
             if (preg_match('/^Skills\s*:/i', $line) && $i + 1 < $n && ! isset($starts[$i + 1])
                 && ! preg_match('/^[•·▪●\-–*]/u', $lines[$i + 1])) {

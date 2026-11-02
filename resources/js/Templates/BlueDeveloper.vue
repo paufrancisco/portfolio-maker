@@ -4,7 +4,7 @@ import { usePortfolioData } from './usePortfolioData';
 
 const props = defineProps({ data: Object, theme: Object });
 
-// Dark ang template na ito: accent lang ang kinukuha sa theme.
+// This template is always dark: only the accent color comes from the theme.
 const accent = computed(() => props.theme?.accent || '#38bdf8');
 const bg = '#0b1220';
 const panel = '#111a2e';

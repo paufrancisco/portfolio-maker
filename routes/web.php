@@ -14,8 +14,26 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
+    $portfolios = \App\Models\Portfolio::where('user_id', $request->user()->id)
+        ->latest('id')
+        ->get()
+        ->map(fn ($p) => [
+            'id' => $p->id,
+            'name' => $p->data['name'] ?? 'Untitled portfolio',
+            'headline' => $p->data['headline'] ?? '',
+            'template_key' => $p->template_key,
+            'status' => $p->status,
+            'slug' => $p->slug,
+            'has_unpublished_changes' => $p->status === 'published'
+                && isset($p->published_data)
+                && $p->published_data != $p->data,
+        ]);
+
+    return Inertia::render('Dashboard', [
+        'portfolios' => $portfolios,
+        'isAdmin' => (bool) $request->user()->is_admin,
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
