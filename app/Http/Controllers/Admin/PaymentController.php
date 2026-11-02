@@ -118,7 +118,7 @@ class PaymentController extends Controller
                 'status' => $portfolio->status,
                 'data' => $portfolio->data ?? [],
             ],
-            'theme' => $template?->theme_options ?? [],
+            'theme' => array_merge($template?->theme_options ?? [], array_filter($portfolio->data['theme'] ?? [])),
             'watermark' => true,
         ]);
     }

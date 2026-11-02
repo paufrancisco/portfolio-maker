@@ -100,7 +100,7 @@ class PortfolioController extends Controller
                 'status' => $portfolio->status,
                 'data' => $data,
             ],
-            'theme' => $template?->theme_options ?? [],
+            'theme' => array_merge($template?->theme_options ?? [], array_filter($data['theme'] ?? [])),
             'watermark' => $portfolio->status !== 'published',
             'templates' => $embed ? null : $templates,
         ]);
@@ -191,6 +191,10 @@ class PortfolioController extends Controller
             'profile.website' => ['nullable', 'url:http,https', 'max:255'],
             'profile.photo_url' => ['nullable', 'url:https', 'max:500'],
             'profile.show_resume' => ['nullable', 'boolean'],
+            'profile.theme' => ['nullable', 'array'],
+            'profile.theme.primary' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'profile.theme.accent' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'profile.theme.background' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ];
 
         foreach (self::SECTION_FIELDS as $section => $fields) {
@@ -229,6 +233,12 @@ class PortfolioController extends Controller
 
             $profile[$section] = $rows;
         }
+
+        // Customer colors: keep only the three allowed keys, drop empty ones (empty = use template color)
+        $profile['theme'] = array_filter(
+            array_intersect_key($profile['theme'] ?? [], array_flip(['primary', 'accent', 'background'])),
+            fn ($v) => is_string($v) && $v !== ''
+        );
 
         // Keep keys not managed by this form (e.g. photo_url) instead of wiping them.
         return array_merge($portfolio->data ?? [], $profile);

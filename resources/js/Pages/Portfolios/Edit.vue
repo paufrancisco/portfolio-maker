@@ -78,6 +78,11 @@ const profile = {
     website: d.website ?? '',
     photo_url: d.photo_url ?? '',
     show_resume: d.show_resume ?? false,
+    theme: {
+        primary: d.theme?.primary ?? '',
+        accent: d.theme?.accent ?? '',
+        background: d.theme?.background ?? '',
+    },
 };
 sections.forEach((s) => {
     profile[s.key] = Array.isArray(d[s.key]) ? d[s.key].map((row) => ({ ...s.blank, ...row })) : [];
@@ -87,6 +92,12 @@ const form = useForm({
     template_key: props.portfolio.template_key,
     profile,
 });
+
+// Customer colors (empty = use the template's own color)
+const themeDefault = (k) => props.templates.find((t) => t.key === form.template_key)?.theme_options?.[k] ?? '#000000';
+const resetColors = () => {
+    form.profile.theme = { primary: '', accent: '', background: '' };
+};
 
 const add = (s) => form.profile[s.key].push({ ...s.blank });
 const remove = (s, i) => form.profile[s.key].splice(i, 1);
@@ -166,6 +177,26 @@ const area =
                             </label>
                         </div>
                         <InputError :message="form.errors.template_key" class="mt-2" />
+                    </div>
+
+                    <!-- Colors -->
+                    <div>
+                        <InputLabel value="Your colors" />
+                        <p class="mt-1 text-xs text-gray-500">Optional. Pick your own colors, or reset to use the template's colors. Save, then open Preview to see them.</p>
+                        <div class="mt-2 flex flex-wrap items-end gap-4">
+                            <label v-for="[key, label] in [['primary', 'Text'], ['accent', 'Accent'], ['background', 'Background']]" :key="key" class="text-xs text-gray-600">
+                                {{ label }}
+                                <input
+                                    type="color"
+                                    class="mt-1 block h-10 w-16 cursor-pointer rounded border border-gray-300"
+                                    :value="form.profile.theme[key] || themeDefault(key)"
+                                    @input="form.profile.theme[key] = $event.target.value"
+                                />
+                            </label>
+                            <button type="button" class="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50" @click="resetColors">
+                                Reset to template colors
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Basics -->

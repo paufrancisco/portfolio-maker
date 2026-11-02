@@ -17,12 +17,14 @@ class PublicPortfolioController extends Controller
         $template = Template::where('key', $portfolio->template_key)->first()
             ?? Template::where('key', 'professional')->first();
 
+        $data = $this->publicData($portfolio);
+
         return Inertia::render('Portfolios/Preview', [
             'portfolio' => [
                 'template_key' => $portfolio->template_key,
-                'data' => $this->publicData($portfolio),
+                'data' => $data,
             ],
-            'theme' => $template?->theme_options ?? [],
+            'theme' => array_merge($template?->theme_options ?? [], array_filter($data['theme'] ?? [])),
             'watermark' => false,
         ]);
     }
