@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/resumes/{resume}', [\App\Http\Controllers\ResumeController::class, 'update'])->name('resumes.update');
     Route::delete('/resumes/{resume}', [\App\Http\Controllers\ResumeController::class, 'destroy'])->name('resumes.destroy');
     Route::get('/resumes/{resume}/preview', [\App\Http\Controllers\ResumeController::class, 'preview'])->name('resumes.preview');
+    Route::get('/resumes/{resume}/download', [\App\Http\Controllers\ResumeController::class, 'download'])->middleware('throttle:20,1')->name('resumes.download');
 });
 
 require __DIR__.'/auth.php';

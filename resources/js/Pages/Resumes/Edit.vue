@@ -12,6 +12,9 @@
                 <a :href="route('resumes.preview', resume.id)" target="_blank" rel="noopener" class="ml-4 text-sm text-blue-600 hover:text-blue-500">
                     Preview saved version
                 </a>
+                <a :href="route('resumes.download', resume.id)" class="ml-4 text-sm text-emerald-700 hover:text-emerald-600">
+                    Download saved version (PDF)
+                </a>
 
                 <div v-if="errorList.length" class="rounded-lg bg-red-50 p-4 text-sm text-red-800">
                     <p class="font-semibold">Please fix the following:</p>

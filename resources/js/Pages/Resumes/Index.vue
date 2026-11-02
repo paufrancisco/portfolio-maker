@@ -41,6 +41,9 @@
                         <a :href="route('resumes.preview', r.id)" target="_blank" rel="noopener" class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
                             Preview
                         </a>
+                        <a :href="route('resumes.download', r.id)" class="rounded-md border border-emerald-300 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50">
+                            Download PDF
+                        </a>
                         <button type="button" class="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50" @click="remove(r)">
                             Delete
                         </button>

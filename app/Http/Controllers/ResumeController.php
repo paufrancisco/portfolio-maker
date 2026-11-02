@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Resume;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -134,6 +136,18 @@ class ResumeController extends Controller
         $resume->delete();
 
         return redirect()->route('resumes.index');
+    }
+
+    public function download(Request $request, Resume $resume)
+    {
+        $this->authorizeOwner($request, $resume);
+
+        $data = $this->viewData($resume);
+        $name = Str::slug($data['d']['personal']['name'] ?: $resume->title) ?: 'resume';
+
+        return Pdf::loadView('resumes.'.$this->templateFor($resume), $data)
+            ->setPaper('a4', 'portrait')
+            ->download($name.'-resume.pdf');
     }
 
     // Reminder: the PDF in phase 3 must use these same two helpers so it matches the preview

@@ -194,13 +194,12 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                         <p class="mt-2 flex-1 text-sm text-gray-600">
                             Choose a resume template, fill up your details, and get a ready-to-send resume.
                         </p>
-                        <button
-                            type="button"
-                            disabled
-                            class="mt-5 w-full cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
+                        <Link
+                            href="/register"
+                            class="mt-5 block w-full rounded-lg bg-emerald-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-emerald-500"
                         >
-                            Coming soon
-                        </button>
+                            Make my resume
+                        </Link>
                     </div>
                 </div>
             </section>
