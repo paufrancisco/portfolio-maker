@@ -5,15 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Portfolio;
 use App\Models\Template;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PublicPortfolioController extends Controller
 {
-    public function show(string $slug): Response
+    public function show(Request $request, string $slug): Response
     {
         $portfolio = Portfolio::where('slug', $slug)->where('status', 'published')->firstOrFail();
+        $this->countView($request, $portfolio);
         $template = Template::where('key', $portfolio->template_key)->first()
             ?? Template::where('key', 'professional')->first();
 
@@ -44,6 +48,27 @@ class PublicPortfolioController extends Controller
         }
 
         return redirect()->away($url);
+    }
+
+    // Count one view per browser per 6 hours. Skips the owner and bots. No IP is stored.
+    private function countView(Request $request, Portfolio $portfolio): void
+    {
+        if ($request->user()?->id === $portfolio->user_id) {
+            return;
+        }
+
+        $agent = (string) $request->userAgent();
+        if ($agent === '' || preg_match('/bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|curl|wget/i', $agent)) {
+            return;
+        }
+
+        $cookie = 'pv_'.$portfolio->id;
+        if ($request->cookie($cookie)) {
+            return;
+        }
+
+        DB::table('portfolios')->where('id', $portfolio->id)->increment('view_count');
+        Cookie::queue($cookie, '1', 360);
     }
 
     private function publicData(Portfolio $portfolio): array

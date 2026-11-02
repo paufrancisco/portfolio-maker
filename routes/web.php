@@ -58,6 +58,7 @@ Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
             'template_key' => $p->template_key,
             'status' => $p->status,
             'slug' => $p->slug,
+            'view_count' => (int) $p->view_count,
             'update_requested' => (bool) $p->update_requested_at,
             'has_unpublished_changes' => $p->status === 'published'
                 && isset($p->published_data)

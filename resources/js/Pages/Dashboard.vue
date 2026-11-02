@@ -78,6 +78,7 @@ const btn = 'rounded-md border px-3 py-1.5 text-sm font-medium';
                                 {{ badge(p.status)[0] }}
                             </span>
                             <span class="text-gray-500">Template: {{ p.template_key }}</span>
+                            <span v-if="p.status === 'published'" class="text-gray-500">{{ p.view_count }} {{ p.view_count === 1 ? 'view' : 'views' }}</span>
                             <span
                                 v-if="p.has_unpublished_changes"
                                 class="rounded-full px-2.5 py-0.5 font-medium"
