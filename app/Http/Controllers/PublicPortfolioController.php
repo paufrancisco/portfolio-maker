@@ -8,6 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,6 +24,7 @@ class PublicPortfolioController extends Controller
             ?? Template::where('key', 'professional')->first();
 
         $data = $this->publicData($portfolio);
+        View::share('og', $this->shareTags($portfolio, $data));
 
         return Inertia::render('Portfolios/Preview', [
             'portfolio' => [
@@ -69,6 +72,23 @@ class PublicPortfolioController extends Controller
 
         DB::table('portfolios')->where('id', $portfolio->id)->increment('view_count');
         Cookie::queue($cookie, '1', 360);
+    }
+
+    // Link preview tags (Facebook, Messenger, WhatsApp, LinkedIn). Built from published data only.
+    private function shareTags(Portfolio $portfolio, array $data): array
+    {
+        $name = trim((string) ($data['name'] ?? ''));
+        $headline = trim((string) ($data['headline'] ?? ''));
+        $about = trim((string) (($data['intro'] ?? '') ?: ($data['about'] ?? '')));
+        $photo = (string) ($data['photo_url'] ?? '');
+
+        return [
+            'site' => config('app.name'),
+            'title' => $name !== '' ? ($headline !== '' ? "$name | $headline" : $name) : config('app.name'),
+            'description' => Str::limit(preg_replace('/\s+/', ' ', $about), 160) ?: 'Portfolio on '.config('app.name'),
+            'url' => route('portfolios.public', $portfolio->slug),
+            'image' => str_starts_with($photo, 'https://') ? $photo : null,
+        ];
     }
 
     private function publicData(Portfolio $portfolio): array

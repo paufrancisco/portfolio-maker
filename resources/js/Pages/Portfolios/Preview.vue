@@ -29,6 +29,9 @@ const current = computed(() => components[props.portfolio.template_key] ?? Profe
 // Owner toolbar mode: only when the server sent a templates list.
 const toolbar = computed(() => Array.isArray(props.templates));
 
+// Live pages show the person's name in the tab; owner/admin previews keep "Preview"
+const pageTitle = computed(() => (props.watermark || toolbar.value ? 'Preview' : props.portfolio.data?.name || 'Portfolio'));
+
 const device = ref('desktop');
 const widths = { desktop: '100%', tablet: '768px', mobile: '390px' };
 
@@ -49,7 +52,7 @@ const btn = 'rounded-md border px-3 py-1.5 text-sm font-medium';
 </script>
 
 <template>
-    <Head title="Preview" />
+    <Head :title="pageTitle" />
 
     <div v-if="toolbar" class="flex h-screen flex-col bg-gray-100">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b bg-white px-4 py-3">
