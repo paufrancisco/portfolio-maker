@@ -67,5 +67,9 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+Route::get('/services/request', [\App\Http\Controllers\ServiceRequestController::class, 'create'])->name('services.create');
+Route::post('/services/request', [\App\Http\Controllers\ServiceRequestController::class, 'store'])->middleware('throttle:5,1')->name('services.store');
+Route::get('/services/{token}', [\App\Http\Controllers\ServiceRequestController::class, 'show'])->middleware('throttle:60,1')->name('services.show');
+
 Route::get('/p/{slug}', [\App\Http\Controllers\PublicPortfolioController::class, 'show'])->name('portfolios.public');
 Route::get('/p/{slug}/resume', [\App\Http\Controllers\PublicPortfolioController::class, 'resume'])->middleware('throttle:20,1')->name('portfolios.resume');
