@@ -1,4 +1,4 @@
-# Portfolio Maker
+# CampusCraft
 
 A web app where customers upload a resume, review the extracted information, pick a template, preview their portfolio, pay by QR code, and receive a public portfolio URL after the owner manually approves the payment.
 

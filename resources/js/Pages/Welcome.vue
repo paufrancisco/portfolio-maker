@@ -8,7 +8,7 @@ defineProps({
     reviewStats: { type: Object, default: () => ({ count: 0, average: 0 }) },
 });
 
-const siteName = 'Portfolio Maker';
+const siteName = 'CampusCraft';
 const contactEmail = 'francisco.pfa.pf@gmail.com';
 
 const thesisForm = useForm({ email: '', type: 'thesis_build' });
@@ -41,7 +41,7 @@ const submitResume = () => resumeForm.post('/resume');
 </script>
 
 <template>
-    <Head :title="siteName" />
+    <Head title="Home" />
 
     <div class="min-h-screen scroll-smooth bg-white text-gray-800">
         <!-- Sticky menu -->

@@ -16,7 +16,7 @@ const submitReview = () => reviewForm.post(`${window.location.pathname}/review`)
 
     <div class="min-h-screen bg-gray-50 text-gray-800">
         <header class="mx-auto flex max-w-3xl items-center justify-between px-6 py-5">
-            <Link href="/" class="text-lg font-bold">Portfolio Maker</Link>
+            <Link href="/" class="text-lg font-bold">CampusCraft</Link>
         </header>
 
         <main class="mx-auto max-w-3xl px-6 pb-16">
