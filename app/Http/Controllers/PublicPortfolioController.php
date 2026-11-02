@@ -31,7 +31,8 @@ class PublicPortfolioController extends Controller
     {
         $portfolio = Portfolio::where('slug', $slug)->where('status', 'published')->firstOrFail();
 
-        abort_unless(($portfolio->data['show_resume'] ?? false) && $portfolio->resume_path, 404);
+        $live = $portfolio->published_data ?? $portfolio->data ?? [];
+        abort_unless(($live['show_resume'] ?? false) && $portfolio->resume_path, 404);
 
         try {
             $url = Storage::disk('s3')->temporaryUrl($portfolio->resume_path, now()->addMinutes(5));
@@ -45,7 +46,7 @@ class PublicPortfolioController extends Controller
 
     private function publicData(Portfolio $portfolio): array
     {
-        $data = $portfolio->data ?? [];
+        $data = $portfolio->published_data ?? $portfolio->data ?? [];
         $show = ($data['show_resume'] ?? false) && $portfolio->resume_path;
 
         unset($data['show_resume'], $data['imported_from_resume'], $data['resume_url']);

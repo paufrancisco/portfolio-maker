@@ -49,6 +49,8 @@ class PaymentController extends Controller
             $portfolio->update([
                 'slug' => $portfolio->slug ?? $this->makeSlug($portfolio),
                 'status' => 'published',
+                'published_data' => $portfolio->data,
+                'published_at' => now(),
             ]);
         });
 
