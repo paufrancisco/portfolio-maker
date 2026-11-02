@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import QRCode from 'qrcode';
 
 defineProps({
     portfolios: Array,
@@ -21,6 +22,20 @@ const requestUpdate = (p) => {
 };
 
 const btn = 'rounded-md border px-3 py-1.5 text-sm font-medium';
+
+// Download a PNG QR code of the live portfolio link (made in the browser)
+const downloadQr = async (p) => {
+    try {
+        const url = new URL(route('portfolios.public', p.slug), window.location.origin).href;
+        const png = await QRCode.toDataURL(url, { width: 1024, margin: 2, errorCorrectionLevel: 'M' });
+        const a = document.createElement('a');
+        a.href = png;
+        a.download = `${p.slug}-qr.png`;
+        a.click();
+    } catch (e) {
+        alert('Could not create the QR code. Please try again.');
+    }
+};
 </script>
 
 <template>
@@ -122,6 +137,15 @@ const btn = 'rounded-md border px-3 py-1.5 text-sm font-medium';
                         >
                             View live
                         </a>
+                        <button
+                            v-if="p.status === 'published' && p.slug"
+                            type="button"
+                            :class="btn"
+                            class="border-gray-300 text-gray-700 hover:bg-gray-50"
+                            @click="downloadQr(p)"
+                        >
+                            QR code
+                        </button>
                     </div>
                 </div>
             </div>
