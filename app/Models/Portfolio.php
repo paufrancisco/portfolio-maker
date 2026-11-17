@@ -28,4 +28,9 @@ class Portfolio extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function changeRequests(): HasMany
+    {
+        return $this->hasMany(ChangeRequest::class);
+    }
 }

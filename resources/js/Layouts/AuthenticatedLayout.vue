@@ -39,6 +39,19 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    :href="route('change-requests.index')"
+                                    :active="route().current('change-requests.*')"
+                                >
+                                    Change requests
+                                    <span
+                                        v-if="$page.props.unreadChangeRequests > 0"
+                                        class="ms-2 rounded-full px-2 py-0.5 text-xs font-semibold"
+                                        style="background-color: #dc2626; color: #ffffff;"
+                                    >
+                                        {{ $page.props.unreadChangeRequests }}
+                                    </span>
+                                </NavLink>
                             </div>
                         </div>
 
@@ -145,6 +158,19 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('change-requests.index')"
+                            :active="route().current('change-requests.*')"
+                        >
+                            Change requests
+                            <span
+                                v-if="$page.props.unreadChangeRequests > 0"
+                                class="ms-2 rounded-full px-2 py-0.5 text-xs font-semibold"
+                                style="background-color: #dc2626; color: #ffffff;"
+                            >
+                                {{ $page.props.unreadChangeRequests }}
+                            </span>
                         </ResponsiveNavLink>
                     </div>
 

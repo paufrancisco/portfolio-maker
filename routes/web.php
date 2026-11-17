@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\ServiceRequestController as AdminServiceRequestController;
+use App\Http\Controllers\ChangeRequestController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
@@ -102,6 +103,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/portfolios/{portfolio}/payment', [PaymentController::class, 'create'])->name('payments.create');
     Route::post('/portfolios/{portfolio}/payment', [PaymentController::class, 'store'])->name('payments.store');
 
+    Route::get('/change-requests', [ChangeRequestController::class, 'index'])->name('change-requests.index');
+    Route::post('/change-requests', [ChangeRequestController::class, 'store'])->middleware('throttle:10,10')->name('change-requests.store');
+    Route::get('/change-requests/{changeRequest}', [ChangeRequestController::class, 'show'])->name('change-requests.show');
+    Route::post('/change-requests/{changeRequest}/reply', [ChangeRequestController::class, 'reply'])->middleware('throttle:30,10')->name('change-requests.reply');
+
     Route::middleware([EnsureUserIsAdmin::class])->prefix('admin')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
@@ -141,8 +147,8 @@ Route::post('/services/{token}/review', [ReviewController::class, 'store'])->mid
 Route::post('/reviews', [ReviewController::class, 'storePublic'])->middleware('throttle:3,10')->name('reviews.store');
 Route::post('/services/{token}/payment', [ServiceRequestController::class, 'pay'])->middleware('throttle:5,1')->name('services.pay');
 Route::get('/services/{token}', [ServiceRequestController::class, 'show'])->middleware('throttle:60,1')->name('services.show');
-Route::get('/terms', fn () => \Inertia\Inertia::render('Legal/Show', ['page' => 'terms']))->name('legal.terms');
-Route::get('/privacy', fn () => \Inertia\Inertia::render('Legal/Show', ['page' => 'privacy']))->name('legal.privacy');
+Route::get('/terms', fn () => Inertia::render('Legal/Show', ['page' => 'terms']))->name('legal.terms');
+Route::get('/privacy', fn () => Inertia::render('Legal/Show', ['page' => 'privacy']))->name('legal.privacy');
 
 Route::get('/p/{slug}', [PublicPortfolioController::class, 'show'])->name('portfolios.public');
 Route::get('/p/{slug}/resume', [PublicPortfolioController::class, 'resume'])->middleware('throttle:20,1')->name('portfolios.resume');
