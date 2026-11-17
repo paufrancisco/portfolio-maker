@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model
 {
@@ -13,7 +14,7 @@ class Payment extends Model
         'reviewed_at' => 'datetime',
     ];
 
-    public function portfolio(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function portfolio(): BelongsTo
     {
         return $this->belongsTo(Portfolio::class);
     }

@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use Illuminate\Support\Facades\Storage;
+use App\Models\Portfolio;
+use App\Models\Template;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use App\Models\Portfolio;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -108,8 +109,8 @@ class PaymentController extends Controller
 
     public function previewDraft(Portfolio $portfolio): Response
     {
-        $template = \App\Models\Template::where('key', $portfolio->template_key)->first()
-            ?? \App\Models\Template::where('key', 'professional')->first();
+        $template = Template::where('key', $portfolio->template_key)->first()
+            ?? Template::where('key', 'professional')->first();
 
         return Inertia::render('Portfolios/Preview', [
             'portfolio' => [

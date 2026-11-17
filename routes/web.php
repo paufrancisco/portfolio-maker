@@ -1,12 +1,29 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
+use App\Http\Controllers\Admin\ServiceRequestController as AdminServiceRequestController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicPortfolioController;
+use App\Http\Controllers\ResumeController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ServiceRequestController;
+use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Models\Portfolio;
+use App\Models\Resume;
+use App\Models\Review;
+use App\Support\SampleContent;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    $hasReviews = \Illuminate\Support\Facades\Schema::hasTable('reviews');
+    $hasReviews = Schema::hasTable('reviews');
 
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -14,11 +31,11 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
         'portfolioPrice' => config('portfolio.price') > 0 ? config('portfolio.price') : null,
-        'reviews' => ! $hasReviews ? [] : \App\Models\Review::with('serviceRequest')->where('status', 'approved')->latest('id')->take(12)->get()
+        'reviews' => ! $hasReviews ? [] : Review::with('serviceRequest')->where('status', 'approved')->latest('id')->take(12)->get()
             ->map(fn ($r) => ['name' => $r->name, 'rating' => $r->rating, 'comment' => $r->comment, 'service' => $r->serviceRequest->typeLabel()])->values(),
         'reviewStats' => [
-            'count' => $hasReviews ? \App\Models\Review::where('status', 'approved')->count() : 0,
-            'average' => $hasReviews ? round((float) \App\Models\Review::where('status', 'approved')->avg('rating'), 1) : 0,
+            'count' => $hasReviews ? Review::where('status', 'approved')->count() : 0,
+            'average' => $hasReviews ? round((float) Review::where('status', 'approved')->avg('rating'), 1) : 0,
         ],
     ]);
 });
@@ -27,7 +44,7 @@ Route::get('/', function () {
 Route::get('/samples/resume/{key}', function (string $key) {
     return response()->view('resumes.'.$key, [
         'title' => 'Sample resume',
-        'd' => array_replace_recursive(\App\Models\Resume::blankData(), \App\Support\SampleContent::resume()),
+        'd' => array_replace_recursive(Resume::blankData(), SampleContent::resume()),
     ]);
 })->whereIn('key', ['classic', 'modern', 'minimal']);
 
@@ -39,16 +56,16 @@ Route::get('/samples/portfolio/{key}', function (string $key) {
             'template_key' => $key,
             'saved_template_key' => $key,
             'status' => 'published',
-            'data' => \App\Support\SampleContent::portfolio(),
+            'data' => SampleContent::portfolio(),
         ],
-        'theme' => \App\Support\SampleContent::theme($key),
+        'theme' => SampleContent::theme($key),
         'watermark' => false,
         'templates' => null,
     ]);
 })->whereIn('key', ['professional', 'pink', 'blue', 'showcase', 'minimal', 'editorial']);
 
-Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
-    $portfolios = \App\Models\Portfolio::where('user_id', $request->user()->id)
+Route::get('/dashboard', function (Request $request) {
+    $portfolios = Portfolio::where('user_id', $request->user()->id)
         ->latest('id')
         ->get()
         ->map(fn ($p) => [
@@ -78,53 +95,53 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/portfolios/create', [\App\Http\Controllers\PortfolioController::class, 'create'])->name('portfolios.create');
-    Route::post('/portfolios', [\App\Http\Controllers\PortfolioController::class, 'store'])->name('portfolios.store');
-    Route::get('/portfolios/{portfolio}/edit', [\App\Http\Controllers\PortfolioController::class, 'edit'])->name('portfolios.edit');
-    Route::get('/portfolios/{portfolio}/preview', [\App\Http\Controllers\PortfolioController::class, 'preview'])->name('portfolios.preview');
-    Route::get('/portfolios/{portfolio}/payment', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payments.create');
-    Route::post('/portfolios/{portfolio}/payment', [\App\Http\Controllers\PaymentController::class, 'store'])->name('payments.store');
+    Route::get('/portfolios/create', [PortfolioController::class, 'create'])->name('portfolios.create');
+    Route::post('/portfolios', [PortfolioController::class, 'store'])->name('portfolios.store');
+    Route::get('/portfolios/{portfolio}/edit', [PortfolioController::class, 'edit'])->name('portfolios.edit');
+    Route::get('/portfolios/{portfolio}/preview', [PortfolioController::class, 'preview'])->name('portfolios.preview');
+    Route::get('/portfolios/{portfolio}/payment', [PaymentController::class, 'create'])->name('payments.create');
+    Route::post('/portfolios/{portfolio}/payment', [PaymentController::class, 'store'])->name('payments.store');
 
-    Route::middleware([\App\Http\Middleware\EnsureUserIsAdmin::class])->prefix('admin')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
-        Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('admin.payments.index');
-        Route::post('/payments/{payment}/approve', [\App\Http\Controllers\Admin\PaymentController::class, 'approve'])->name('admin.payments.approve');
-        Route::post('/payments/{payment}/reject', [\App\Http\Controllers\Admin\PaymentController::class, 'reject'])->name('admin.payments.reject');
-        Route::post('/portfolios/{portfolio}/publish-update', [\App\Http\Controllers\Admin\PaymentController::class, 'publishUpdate'])->name('admin.portfolios.publish-update');
-        Route::get('/portfolios/{portfolio}/preview', [\App\Http\Controllers\Admin\PaymentController::class, 'previewDraft'])->name('admin.portfolios.preview');
-        Route::get('/reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('admin.reviews.index');
-        Route::get('/requests', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'index'])->name('admin.requests.index');
-        Route::get('/requests/{serviceRequest}', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'show'])->name('admin.requests.show');
-        Route::post('/requests/{serviceRequest}/quote', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'quote'])->name('admin.requests.quote');
-        Route::post('/requests/{serviceRequest}/payment/approve', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'approvePayment'])->name('admin.requests.payment.approve');
-        Route::post('/requests/{serviceRequest}/payment/reject', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'rejectPayment'])->name('admin.requests.payment.reject');
-        Route::post('/requests/{serviceRequest}/deliver', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'deliver'])->name('admin.requests.deliver');
-        Route::post('/requests/{serviceRequest}/reject', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'reject'])->name('admin.requests.reject');
-        Route::post('/reviews/{review}/approve', [\App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('admin.reviews.approve');
-        Route::post('/reviews/{review}/hide', [\App\Http\Controllers\Admin\ReviewController::class, 'hide'])->name('admin.reviews.hide');
+    Route::middleware([EnsureUserIsAdmin::class])->prefix('admin')->group(function () {
+        Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
+        Route::post('/payments/{payment}/approve', [AdminPaymentController::class, 'approve'])->name('admin.payments.approve');
+        Route::post('/payments/{payment}/reject', [AdminPaymentController::class, 'reject'])->name('admin.payments.reject');
+        Route::post('/portfolios/{portfolio}/publish-update', [AdminPaymentController::class, 'publishUpdate'])->name('admin.portfolios.publish-update');
+        Route::get('/portfolios/{portfolio}/preview', [AdminPaymentController::class, 'previewDraft'])->name('admin.portfolios.preview');
+        Route::get('/reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
+        Route::get('/requests', [AdminServiceRequestController::class, 'index'])->name('admin.requests.index');
+        Route::get('/requests/{serviceRequest}', [AdminServiceRequestController::class, 'show'])->name('admin.requests.show');
+        Route::post('/requests/{serviceRequest}/quote', [AdminServiceRequestController::class, 'quote'])->name('admin.requests.quote');
+        Route::post('/requests/{serviceRequest}/payment/approve', [AdminServiceRequestController::class, 'approvePayment'])->name('admin.requests.payment.approve');
+        Route::post('/requests/{serviceRequest}/payment/reject', [AdminServiceRequestController::class, 'rejectPayment'])->name('admin.requests.payment.reject');
+        Route::post('/requests/{serviceRequest}/deliver', [AdminServiceRequestController::class, 'deliver'])->name('admin.requests.deliver');
+        Route::post('/requests/{serviceRequest}/reject', [AdminServiceRequestController::class, 'reject'])->name('admin.requests.reject');
+        Route::post('/reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('admin.reviews.approve');
+        Route::post('/reviews/{review}/hide', [AdminReviewController::class, 'hide'])->name('admin.reviews.hide');
     });
-    Route::put('/portfolios/{portfolio}', [\App\Http\Controllers\PortfolioController::class, 'update'])->name('portfolios.update');
-    Route::post('/portfolios/{portfolio}/images', [\App\Http\Controllers\PortfolioController::class, 'uploadImage'])->middleware('throttle:30,1')->name('portfolios.images');
-    Route::post('/portfolios/{portfolio}/template', [\App\Http\Controllers\PortfolioController::class, 'setTemplate'])->name('portfolios.template');
-    Route::post('/portfolios/{portfolio}/request-update', [\App\Http\Controllers\PortfolioController::class, 'requestUpdate'])->middleware('throttle:10,1')->name('portfolios.request-update');
-    Route::get('/resumes', [\App\Http\Controllers\ResumeController::class, 'index'])->name('resumes.index');
-    Route::post('/resumes', [\App\Http\Controllers\ResumeController::class, 'store'])->name('resumes.store');
-    Route::get('/resumes/{resume}/edit', [\App\Http\Controllers\ResumeController::class, 'edit'])->name('resumes.edit');
-    Route::put('/resumes/{resume}', [\App\Http\Controllers\ResumeController::class, 'update'])->name('resumes.update');
-    Route::delete('/resumes/{resume}', [\App\Http\Controllers\ResumeController::class, 'destroy'])->name('resumes.destroy');
-    Route::get('/resumes/{resume}/preview', [\App\Http\Controllers\ResumeController::class, 'preview'])->name('resumes.preview');
-    Route::get('/resumes/{resume}/download', [\App\Http\Controllers\ResumeController::class, 'download'])->middleware('throttle:20,1')->name('resumes.download');
+    Route::put('/portfolios/{portfolio}', [PortfolioController::class, 'update'])->name('portfolios.update');
+    Route::post('/portfolios/{portfolio}/images', [PortfolioController::class, 'uploadImage'])->middleware('throttle:30,1')->name('portfolios.images');
+    Route::post('/portfolios/{portfolio}/template', [PortfolioController::class, 'setTemplate'])->name('portfolios.template');
+    Route::post('/portfolios/{portfolio}/request-update', [PortfolioController::class, 'requestUpdate'])->middleware('throttle:10,1')->name('portfolios.request-update');
+    Route::get('/resumes', [ResumeController::class, 'index'])->name('resumes.index');
+    Route::post('/resumes', [ResumeController::class, 'store'])->name('resumes.store');
+    Route::get('/resumes/{resume}/edit', [ResumeController::class, 'edit'])->name('resumes.edit');
+    Route::put('/resumes/{resume}', [ResumeController::class, 'update'])->name('resumes.update');
+    Route::delete('/resumes/{resume}', [ResumeController::class, 'destroy'])->name('resumes.destroy');
+    Route::get('/resumes/{resume}/preview', [ResumeController::class, 'preview'])->name('resumes.preview');
+    Route::get('/resumes/{resume}/download', [ResumeController::class, 'download'])->middleware('throttle:20,1')->name('resumes.download');
 });
 
 require __DIR__.'/auth.php';
 
-Route::get('/services/request', [\App\Http\Controllers\ServiceRequestController::class, 'create'])->name('services.create');
-Route::post('/services/request', [\App\Http\Controllers\ServiceRequestController::class, 'store'])->middleware('throttle:5,1')->name('services.store');
-Route::post('/services/{token}/review', [\App\Http\Controllers\ReviewController::class, 'store'])->middleware('throttle:5,1')->name('services.review');
-Route::post('/services/{token}/payment', [\App\Http\Controllers\ServiceRequestController::class, 'pay'])->middleware('throttle:5,1')->name('services.pay');
-Route::get('/services/{token}', [\App\Http\Controllers\ServiceRequestController::class, 'show'])->middleware('throttle:60,1')->name('services.show');
+Route::get('/services/request', [ServiceRequestController::class, 'create'])->name('services.create');
+Route::post('/services/request', [ServiceRequestController::class, 'store'])->middleware('throttle:5,1')->name('services.store');
+Route::post('/services/{token}/review', [ReviewController::class, 'store'])->middleware('throttle:5,1')->name('services.review');
+Route::post('/services/{token}/payment', [ServiceRequestController::class, 'pay'])->middleware('throttle:5,1')->name('services.pay');
+Route::get('/services/{token}', [ServiceRequestController::class, 'show'])->middleware('throttle:60,1')->name('services.show');
 Route::get('/terms', fn () => \Inertia\Inertia::render('Legal/Show', ['page' => 'terms']))->name('legal.terms');
 Route::get('/privacy', fn () => \Inertia\Inertia::render('Legal/Show', ['page' => 'privacy']))->name('legal.privacy');
 
-Route::get('/p/{slug}', [\App\Http\Controllers\PublicPortfolioController::class, 'show'])->name('portfolios.public');
-Route::get('/p/{slug}/resume', [\App\Http\Controllers\PublicPortfolioController::class, 'resume'])->middleware('throttle:20,1')->name('portfolios.resume');
+Route::get('/p/{slug}', [PublicPortfolioController::class, 'show'])->name('portfolios.public');
+Route::get('/p/{slug}/resume', [PublicPortfolioController::class, 'resume'])->middleware('throttle:20,1')->name('portfolios.resume');

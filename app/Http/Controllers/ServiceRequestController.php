@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Review;
 use App\Models\ServiceRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -129,7 +130,7 @@ class ServiceRequestController extends Controller
     {
         $serviceRequest = ServiceRequest::where('token', $token)->firstOrFail();
 
-        $review = \App\Models\Review::where('service_request_id', $serviceRequest->id)->first();
+        $review = Review::where('service_request_id', $serviceRequest->id)->first();
 
         return Inertia::render('Services/Show', [
             'payment' => [

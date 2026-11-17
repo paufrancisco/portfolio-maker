@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Portfolio;
+use App\Models\Review;
+use App\Models\ServiceRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -56,11 +59,11 @@ class DashboardController extends Controller
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
-                'customers' => \Illuminate\Support\Facades\DB::table('service_requests')->select('email')
-                    ->union(\Illuminate\Support\Facades\DB::table('users')->where('is_admin', false)->select('email'))
+                'customers' => DB::table('service_requests')->select('email')
+                    ->union(DB::table('users')->where('is_admin', false)->select('email'))
                     ->count(),
-                'pending_requests' => \App\Models\ServiceRequest::whereIn('status', ['received', 'payment_submitted'])->count(),
-                'pending_reviews' => \App\Models\Review::where('status', 'pending')->count(),
+                'pending_requests' => ServiceRequest::whereIn('status', ['received', 'payment_submitted'])->count(),
+                'pending_reviews' => Review::where('status', 'pending')->count(),
                 'portfolios' => Portfolio::count(),
                 'published' => Portfolio::where('status', 'published')->count(),
                 'pending' => Payment::where('status', 'pending')->count(),
