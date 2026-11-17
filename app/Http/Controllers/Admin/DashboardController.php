@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChangeRequest;
 use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\Review;
@@ -64,6 +65,12 @@ class DashboardController extends Controller
                     ->count(),
                 'pending_requests' => ServiceRequest::whereIn('status', ['received', 'payment_submitted'])->count(),
                 'pending_reviews' => Review::where('status', 'pending')->count(),
+                'unread_change_requests' => ChangeRequest::whereNotNull('last_message_at')
+                    ->where(function ($query) {
+                        $query->whereNull('admin_read_at')
+                            ->orWhereColumn('admin_read_at', '<', 'last_message_at');
+                    })
+                    ->count(),
                 'portfolios' => Portfolio::count(),
                 'published' => Portfolio::where('status', 'published')->count(),
                 'pending' => Payment::where('status', 'pending')->count(),

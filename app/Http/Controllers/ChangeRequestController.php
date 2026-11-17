@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\ChangeRequest;
 use App\Models\Portfolio;
+use App\Support\ChangeRequestNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -84,6 +86,13 @@ class ChangeRequestController extends Controller
             return $changeRequest;
         });
 
+        ChangeRequestNotifier::toAdmins(
+            'New change request',
+            "{$request->user()->name} sent a new change request: \"{$validated['title']}\"\n\n"
+            .Str::limit($validated['body'], 300)
+            ."\n\nOpen it here:\n".route('admin.change-requests.show', $changeRequest)
+        );
+
         return redirect()->route('change-requests.show', $changeRequest);
     }
 
@@ -149,6 +158,13 @@ class ChangeRequestController extends Controller
                 'customer_read_at' => now(),
             ]);
         });
+
+        ChangeRequestNotifier::toAdmins(
+            'New customer message',
+            "{$request->user()->name} replied on \"{$changeRequest->title}\":\n\n"
+            .Str::limit($validated['body'], 300)
+            ."\n\nOpen it here:\n".route('admin.change-requests.show', $changeRequest)
+        );
 
         return back();
     }

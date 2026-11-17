@@ -68,6 +68,13 @@ const badge = (s) => statusStyle[s] ?? [s, '#374151', '#e5e7eb'];
                     >
                         Reviews ({{ stats.pending_reviews }} pending)
                     </Link>
+                    <Link
+                        :href="route('admin.change-requests.index')"
+                        class="rounded-md px-4 py-2 text-sm font-medium"
+                        style="background-color: #ea580c; color: #ffffff;"
+                    >
+                        Change requests ({{ stats.unread_change_requests }} unread)
+                    </Link>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 md:grid-cols-4">

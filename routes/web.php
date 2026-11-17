@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ChangeRequestController as AdminChangeRequestController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
@@ -115,6 +116,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/payments/{payment}/reject', [AdminPaymentController::class, 'reject'])->name('admin.payments.reject');
         Route::post('/portfolios/{portfolio}/publish-update', [AdminPaymentController::class, 'publishUpdate'])->name('admin.portfolios.publish-update');
         Route::get('/portfolios/{portfolio}/preview', [AdminPaymentController::class, 'previewDraft'])->name('admin.portfolios.preview');
+        Route::get('/change-requests', [AdminChangeRequestController::class, 'index'])->name('admin.change-requests.index');
+        Route::get('/change-requests/{changeRequest}', [AdminChangeRequestController::class, 'show'])->name('admin.change-requests.show');
+        Route::post('/change-requests/{changeRequest}/reply', [AdminChangeRequestController::class, 'reply'])->middleware('throttle:60,10')->name('admin.change-requests.reply');
+        Route::post('/change-requests/{changeRequest}/update', [AdminChangeRequestController::class, 'update'])->name('admin.change-requests.update');
         Route::get('/reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
         Route::get('/requests', [AdminServiceRequestController::class, 'index'])->name('admin.requests.index');
         Route::get('/requests/{serviceRequest}', [AdminServiceRequestController::class, 'show'])->name('admin.requests.show');
