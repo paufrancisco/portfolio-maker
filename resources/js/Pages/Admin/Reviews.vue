@@ -21,7 +21,7 @@ const hide = (id) => router.post(`/admin/reviews/${id}/hide`, {}, { preserveScro
         <div class="py-8">
             <div class="mx-auto max-w-4xl space-y-4 px-4 sm:px-6 lg:px-8">
                 <p v-if="!reviews.length" class="rounded-lg bg-white p-6 text-sm text-gray-500 shadow-sm">
-                    No reviews yet. Clients can review after their request is marked delivered.
+                    No reviews yet.
                 </p>
 
                 <div v-for="r in reviews" :key="r.id" class="rounded-lg bg-white p-5 shadow-sm">
@@ -31,7 +31,7 @@ const hide = (id) => router.post(`/admin/reviews/${id}/hide`, {}, { preserveScro
                                 {{ r.name }}
                                 <span class="ml-2 text-amber-500">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</span>
                             </p>
-                            <p class="text-xs text-gray-500">{{ r.service }} · {{ r.email }} · {{ r.created_at }}</p>
+                            <p class="text-xs text-gray-500">{{ r.service ?? 'Public review' }}<template v-if="r.email"> · {{ r.email }}</template> · {{ r.created_at }}</p>
                         </div>
                         <span
                             :class="[
@@ -43,6 +43,9 @@ const hide = (id) => router.post(`/admin/reviews/${id}/hide`, {}, { preserveScro
                         </span>
                     </div>
                     <p class="mt-3 whitespace-pre-line text-sm text-gray-700">{{ r.comment }}</p>
+                    <a v-if="r.photo_url" :href="r.photo_url" target="_blank" rel="noopener" class="mt-3 inline-block">
+                        <img :src="r.photo_url" alt="Photo proof" class="h-28 rounded-lg border object-cover" />
+                    </a>
                     <div class="mt-4 flex gap-2">
                         <button
                             v-if="r.status !== 'approved'"

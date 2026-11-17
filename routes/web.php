@@ -32,7 +32,7 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
         'portfolioPrice' => config('portfolio.price') > 0 ? config('portfolio.price') : null,
         'reviews' => ! $hasReviews ? [] : Review::with('serviceRequest')->where('status', 'approved')->latest('id')->take(12)->get()
-            ->map(fn ($r) => ['name' => $r->name, 'rating' => $r->rating, 'comment' => $r->comment, 'service' => $r->serviceRequest->typeLabel()])->values(),
+            ->map(fn ($r) => ['name' => $r->name, 'rating' => $r->rating, 'comment' => $r->comment, 'service' => $r->serviceRequest?->typeLabel(), 'verified' => $r->service_request_id !== null, 'photo_url' => $r->photo_url])->values(),
         'reviewStats' => [
             'count' => $hasReviews ? Review::where('status', 'approved')->count() : 0,
             'average' => $hasReviews ? round((float) Review::where('status', 'approved')->avg('rating'), 1) : 0,
@@ -138,6 +138,7 @@ require __DIR__.'/auth.php';
 Route::get('/services/request', [ServiceRequestController::class, 'create'])->name('services.create');
 Route::post('/services/request', [ServiceRequestController::class, 'store'])->middleware('throttle:5,1')->name('services.store');
 Route::post('/services/{token}/review', [ReviewController::class, 'store'])->middleware('throttle:5,1')->name('services.review');
+Route::post('/reviews', [ReviewController::class, 'storePublic'])->middleware('throttle:3,10')->name('reviews.store');
 Route::post('/services/{token}/payment', [ServiceRequestController::class, 'pay'])->middleware('throttle:5,1')->name('services.pay');
 Route::get('/services/{token}', [ServiceRequestController::class, 'show'])->middleware('throttle:60,1')->name('services.show');
 Route::get('/terms', fn () => \Inertia\Inertia::render('Legal/Show', ['page' => 'terms']))->name('legal.terms');

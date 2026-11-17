@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue';
 import SamplePreview from '@/Components/SamplePreview.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 
@@ -9,6 +10,40 @@ defineProps({
     reviewStats: { type: Object, default: () => ({ count: 0, average: 0 }) },
     portfolioPrice: { type: Number, default: null },
 });
+
+const showReviewForm = ref(false);
+const reviewSent = ref(false);
+const photoPreview = ref(null);
+
+const reviewForm = useForm({
+    name: '',
+    rating: 0,
+    comment: '',
+    photo: null,
+});
+
+function pickPhoto(event) {
+    const file = event.target.files[0] ?? null;
+    reviewForm.photo = file;
+    photoPreview.value = file ? URL.createObjectURL(file) : null;
+}
+
+function submitReview() {
+    reviewForm.post(route('reviews.store'), {
+        forceFormData: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            reviewForm.reset();
+            photoPreview.value = null;
+            showReviewForm.value = false;
+            reviewSent.value = true;
+        },
+    });
+}
+
+function stars(n) {
+    return '★'.repeat(n) + '☆'.repeat(5 - n);
+}
 
 const siteName = 'CampusCraft';
 const contactEmail = 'francisco.pfa.pf@gmail.com';
@@ -57,7 +92,7 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                     <a href="#templates" class="hover:text-gray-900">Templates</a>
                     <a href="#how" class="hover:text-gray-900">How it works</a>
                     <a href="#faq" class="hover:text-gray-900">FAQ</a>
-                    <a v-if="reviews.length" href="#reviews" class="hover:text-gray-900">Reviews</a>
+                    <a href="#reviews" class="hover:text-gray-900">Reviews</a>
                 </nav>
                 <div class="flex items-center gap-4 text-sm">
                     <Link v-if="canLogin" href="/login" class="text-gray-600 hover:text-gray-900">Log in</Link>
@@ -96,9 +131,9 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
                     <div v-if="reviewStats.count > 0">
                         <span class="text-amber-500">★</span>
                         <span class="font-semibold text-gray-900">{{ reviewStats.average }}</span>
-                        from {{ reviewStats.count }} verified {{ reviewStats.count === 1 ? 'client' : 'clients' }}
+                        from {{ reviewStats.count }} {{ reviewStats.count === 1 ? 'review' : 'reviews' }}
                     </div>
-                    <div v-else>Reviews come only from real, delivered work</div>
+                    <div v-else>Every review is checked before it is shown</div>
                     <div>No account or password needed</div>
                     <div>Updates and results sent to your email</div>
                 </div>
@@ -264,24 +299,101 @@ const submitPortfolio = () => router.get('/register', { email: portfolioForm.ema
             </section>
 
             <!-- Reviews -->
-            <section v-if="reviews.length" id="reviews" class="scroll-mt-20 bg-gray-50">
+            <section id="reviews" class="scroll-mt-20 bg-gray-50">
                 <div class="mx-auto max-w-6xl px-6 py-16">
                     <h2 class="text-center text-3xl font-bold">Customer reviews</h2>
-                    <p class="mt-2 text-center text-sm text-gray-600">
-                        <span class="text-amber-500">★</span> {{ reviewStats.average }} from {{ reviewStats.count }} verified
-                        {{ reviewStats.count === 1 ? 'client' : 'clients' }}
+                    <p v-if="reviewStats.count > 0" class="mt-2 text-center text-sm text-gray-600">
+                        <span class="text-amber-500">★</span> {{ reviewStats.average }} from {{ reviewStats.count }}
+                        {{ reviewStats.count === 1 ? 'review' : 'reviews' }}
                     </p>
-                    <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <p v-else class="mt-2 text-center text-sm text-gray-600">No reviews yet. Be the first to share your experience.</p>
+
+                    <div class="mt-6 text-center">
+                        <button
+                            type="button"
+                            class="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-700"
+                            @click="showReviewForm = true; reviewSent = false"
+                        >
+                            Add review
+                        </button>
+                        <p v-if="reviewSent" class="mt-3 text-sm text-emerald-700">
+                            Thank you! Your review will appear here once it is approved.
+                        </p>
+                    </div>
+
+                    <div v-if="reviews.length" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div v-for="(r, i) in reviews" :key="i" class="rounded-2xl border bg-white p-5 shadow-sm">
-                            <p class="text-amber-500">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</p>
+                            <p class="text-amber-500">{{ stars(r.rating) }}</p>
                             <p class="mt-2 whitespace-pre-line text-sm text-gray-700">{{ r.comment }}</p>
+                            <a v-if="r.photo_url" :href="r.photo_url" target="_blank" rel="noopener" class="mt-3 block">
+                                <img :src="r.photo_url" alt="Photo from the reviewer" loading="lazy" class="h-40 w-full rounded-lg border object-cover" />
+                            </a>
                             <div class="mt-4 flex items-center justify-between text-xs">
                                 <span class="font-medium">{{ r.name }}</span>
-                                <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">Verified client</span>
+                                <span v-if="r.verified" class="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">Verified client</span>
                             </div>
-                            <p class="mt-1 text-xs text-gray-400">{{ r.service }}</p>
+                            <p v-if="r.service" class="mt-1 text-xs text-gray-400">{{ r.service }}</p>
                         </div>
                     </div>
+                </div>
+
+                <div
+                    v-if="showReviewForm"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+                    @click.self="showReviewForm = false"
+                >
+                    <form
+                        class="max-h-[90vh] w-full max-w-md space-y-4 overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+                        @submit.prevent="submitReview"
+                    >
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold">Add your review</h3>
+                            <button type="button" class="text-2xl leading-none text-gray-400 hover:text-gray-600" @click="showReviewForm = false">&times;</button>
+                        </div>
+
+                        <div>
+                            <div class="flex gap-1">
+                                <button
+                                    v-for="n in 5"
+                                    :key="n"
+                                    type="button"
+                                    :class="[n <= reviewForm.rating ? 'text-amber-500' : 'text-gray-300', 'text-3xl leading-none']"
+                                    @click="reviewForm.rating = n"
+                                >
+                                    ★
+                                </button>
+                            </div>
+                            <p v-if="reviewForm.errors.rating" class="mt-1 text-xs text-red-600">{{ reviewForm.errors.rating }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">Name to show</label>
+                            <input v-model="reviewForm.name" type="text" required maxlength="60" class="mt-1 w-full rounded-lg border-gray-300 text-sm" />
+                            <p v-if="reviewForm.errors.name" class="mt-1 text-xs text-red-600">{{ reviewForm.errors.name }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">Your review</label>
+                            <textarea v-model="reviewForm.comment" rows="4" required minlength="10" maxlength="1000" class="mt-1 w-full rounded-lg border-gray-300 text-sm"></textarea>
+                            <p v-if="reviewForm.errors.comment" class="mt-1 text-xs text-red-600">{{ reviewForm.errors.comment }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">Photo proof</label>
+                            <input type="file" accept="image/png,image/jpeg,image/webp" required class="mt-1 block w-full text-sm" @change="pickPhoto" />
+                            <p class="mt-1 text-xs text-gray-500">A screenshot of our chat or of the finished work. Shown with your review so others can see it is real. Hide any private details first.</p>
+                            <img v-if="photoPreview" :src="photoPreview" alt="Selected photo" class="mt-2 h-24 rounded-lg border object-cover" />
+                            <p v-if="reviewForm.errors.photo" class="mt-1 text-xs text-red-600">{{ reviewForm.errors.photo }}</p>
+                        </div>
+
+                        <button
+                            type="submit"
+                            :disabled="reviewForm.processing"
+                            class="w-full rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+                        >
+                            Submit review
+                        </button>
+                    </form>
                 </div>
             </section>
 

@@ -22,8 +22,9 @@ class ReviewController extends Controller
                 'rating' => $review->rating,
                 'comment' => $review->comment,
                 'status' => $review->status,
-                'service' => $review->serviceRequest->typeLabel(),
-                'email' => $review->serviceRequest->email,
+                'service' => $review->serviceRequest?->typeLabel(),
+                'email' => $review->serviceRequest?->email,
+                'photo_url' => $review->photo_url,
                 'created_at' => $review->created_at->toDayDateTimeString(),
             ]);
 

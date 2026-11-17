@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Review extends Model
 {
-    protected $fillable = ['service_request_id', 'name', 'rating', 'comment', 'status'];
+    protected $fillable = ['service_request_id', 'name', 'rating', 'comment', 'photo_url', 'status'];
 
     public function serviceRequest(): BelongsTo
     {
