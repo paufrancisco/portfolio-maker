@@ -41,9 +41,7 @@ const resumeTemplates = [
 
 const submitThesis = () => thesisForm.get('/services/request');
 const submitTutor = () => tutorForm.get('/services/request');
-// Reminder: portfolio clients sign up normally; the card only prefills their email
 const submitPortfolio = () => router.get('/register', { email: portfolioForm.email });
-// Reminder: Resume Maker is not built yet, so its card is disabled (no /resume route)
 </script>
 
 <template>

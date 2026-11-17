@@ -145,7 +145,6 @@ const sendQuote = () => quoteForm.post(`${base}/quote`, { preserveScroll: true }
 const deliver = () => deliverForm.post(`${base}/deliver`, { preserveScroll: true });
 const reject = () => rejectForm.post(`${base}/reject`, { preserveScroll: true });
 
-// Reminder: approve/reject payment only apply while status is payment_submitted
 const approvePayment = () => router.post(`${base}/payment/approve`, {}, { preserveScroll: true });
 const rejectPayment = () => paymentRejectForm.post(`${base}/payment/reject`, { preserveScroll: true });
 </script>

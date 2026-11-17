@@ -8,7 +8,6 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
     name: '',
-    // Reminder: the home page card passes ?email= so the client does not retype it
     email: new URLSearchParams(window.location.search).get('email') ?? '',
     password: '',
     password_confirmation: '',
@@ -110,7 +109,6 @@ const submit = () => {
                 </PrimaryButton>
             </div>
 
-            <!-- Reminder: this line is where clients accept the legal pages -->
             <p class="mt-4 text-xs text-gray-500">
                 By creating an account you agree to our
                 <a href="/terms" target="_blank" rel="noopener" class="underline hover:text-gray-700">Terms</a>

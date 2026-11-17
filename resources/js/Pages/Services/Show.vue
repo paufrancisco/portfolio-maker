@@ -166,7 +166,6 @@ const props = defineProps({
 const reviewForm = useForm({ name: '', rating: 5, comment: '' });
 const payForm = useForm({ reference_no: '', proof: null });
 
-// Reminder: both forms post to the current /services/{token} path
 const submitReview = () => reviewForm.post(`${window.location.pathname}/review`);
 const submitPayment = () =>
     payForm.post(`${window.location.pathname}/payment`, {

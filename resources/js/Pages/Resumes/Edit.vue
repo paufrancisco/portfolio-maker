@@ -145,7 +145,6 @@ const inp = 'mt-1 w-full rounded-lg border-gray-300 text-sm';
 const lbl = 'block text-sm font-medium';
 const addBtn = 'rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50';
 
-// Reminder: the field is named "content" because useForm already has a data() method
 const form = useForm({
     title: props.resume.title,
     template_key: props.resume.template_key,

@@ -103,7 +103,6 @@ class ResumeController extends Controller
 
         $content = $validated['content'];
 
-        // Reminder: drop rows where every field is empty, so an accidental "Add" leaves nothing behind
         foreach (['experience', 'education', 'projects'] as $section) {
             $content[$section] = array_values(array_filter(
                 $content[$section] ?? [],
@@ -150,7 +149,6 @@ class ResumeController extends Controller
             ->download($name.'-resume.pdf');
     }
 
-    // Reminder: the PDF in phase 3 must use these same two helpers so it matches the preview
     private function templateFor(Resume $resume): string
     {
         return array_key_exists($resume->template_key, Resume::TEMPLATES) ? $resume->template_key : 'classic';

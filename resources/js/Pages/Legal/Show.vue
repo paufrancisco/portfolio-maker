@@ -32,7 +32,6 @@ const props = defineProps({
     page: String,
 });
 
-// Reminder: update the contact email here if it changes (same one as the home page footer)
 const email = 'francisco.pfa.pf@gmail.com';
 
 const docs = {
